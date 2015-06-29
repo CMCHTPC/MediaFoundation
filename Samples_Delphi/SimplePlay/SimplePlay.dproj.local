@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2015.06.29 11:27:02.313.pas,C:\Users\ladmin\Documents\RAD Studio\Projekte\Unit1.pas=F:\GitHub\MediaFoundation\Samples_Delphi\SimplePlay\MainUnit.pas</Transaction>
+    <Transaction>2015.06.29 11:27:02.324.dfm,C:\Users\ladmin\Documents\RAD Studio\Projekte\Unit1.dfm=F:\GitHub\MediaFoundation\Samples_Delphi\SimplePlay\MainUnit.dfm</Transaction>
+    <Transaction>2015.06.29 11:27:10.667.dproj,C:\Users\ladmin\Documents\RAD Studio\Projekte\Project3.dproj=F:\GitHub\MediaFoundation\Samples_Delphi\SimplePlay\SimplePlay.dproj</Transaction>
+    <Transaction>2015.06.29 13:46:37.639.pas,F:\GitHub\MediaFoundation\Samples_Delphi\SimplePlay\Unit1.pas=F:\GitHub\MediaFoundation\Units\CMC.IntSafe.pas</Transaction>
+    <Transaction>2015.06.29 14:08:23.846.pas,F:\GitHub\MediaFoundation\Units\CMC.IntSafe.pas=</Transaction>
+    <Transaction>2015.06.29 14:25:03.379.pas,F:\GitHub\MediaFoundation\Samples_Delphi\SimplePlay\Unit1.pas=F:\GitHub\MediaFoundation\Units\CMC.KSMedia.pas</Transaction>
+    <Transaction>2015.06.29 14:27:46.693.pas,F:\GitHub\MediaFoundation\Samples_Delphi\SimplePlay\Unit1.pas=F:\GitHub\MediaFoundation\Units\CMC.KS.pas</Transaction>
+    <Transaction>2015.06.29 15:28:38.337.pas,F:\GitHub\MediaFoundation\Samples_Delphi\SimplePlay\Unit1.pas=F:\GitHub\MediaFoundation\Units\CMC.MFError.pas</Transaction>
+    <Transaction>2015.06.29 15:30:35.568.pas,F:\GitHub\MediaFoundation\Units\CMC.MediaFoundation.pas=</Transaction>
+    <Transaction>2015.06.29 18:03:41.492.pas,F:\GitHub\MediaFoundation\Samples_Delphi\SimplePlay\Unit1.pas=F:\GitHub\MediaFoundation\Units\CMC.MMEAPI.pas</Transaction>
+    <Transaction>2015.06.29 18:07:47.612.pas,F:\GitHub\MediaFoundation\Samples_Delphi\SimplePlay\Unit1.pas=F:\GitHub\MediaFoundation\Units\CMC.MMSysCom.pas</Transaction>
+  </Transactions>
+</BorlandProject>
