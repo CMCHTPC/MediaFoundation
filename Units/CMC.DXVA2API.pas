@@ -7,7 +7,7 @@ unit CMC.DXVA2API;
 interface
 
 uses
-    Windows, Classes, SysUtils, ActiveX,Direct3D9;
+    Windows, Classes, SysUtils, ActiveX, Direct3D9;
 
 const
     DXVA2_DLL = 'Dxva2.dll';
@@ -217,7 +217,8 @@ type
     PD3DPOOL = ^TD3DPOOL;
 
 
-    TDXVA2_ExtendedFormat = {bitpacked} record
+    {$IFDEF FPC}
+    TDXVA2_ExtendedFormat = bitpacked record
         case integer of
             0: (
                 SampleFormat: 0..255;
@@ -230,6 +231,12 @@ type
             );
             1: (Value: UINT);
     end;
+    {$ELSE}
+     TDXVA2_ExtendedFormat =  record
+          Value: UINT;
+     end;
+    {$ENDIF}
+
 
 
     TDXVA2_SampleFormat = (
@@ -502,7 +509,7 @@ type
     IDirectXVideoAccelerationService = interface(IUnknown)
         ['{fc51a550-d5e7-11d9-af55-00054e43ff02}']
         function CreateSurface(Width: UINT; Height: UINT; BackBuffers: UINT; Format: TD3DFORMAT; Pool: TD3DPOOL;
-            Usage: DWORD; DxvaType: DWORD; out ppSurface: PIDirect3DSurface9; var pSharedHandle: THANDLE): HResult; stdcall;
+            Usage: DWORD; DxvaType: DWORD; out ppSurface: IDirect3DSurface9; pSharedHandle: PHANDLE): HResult; stdcall;
     end;
 
     IDirectXVideoDecoder = interface;

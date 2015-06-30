@@ -444,7 +444,7 @@ type
         );
 
 {$IFDEF FPC}
-    TDXVA_ExtendedFormat = record
+    TDXVA_ExtendedFormat = bitpacked record
         SampleFormat: 0..255;           // See DXVA_SampleFormat
         VideoChromaSubsampling: 0..15; // See DXVA_VideoChromaSubSampling
         NominalRange: 0..7;           // See DXVA_NominalRange
