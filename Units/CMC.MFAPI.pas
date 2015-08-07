@@ -359,6 +359,30 @@ const
     // HDCP 2.2/2.1 specification.  This blob should contain the stream counter and
     // input counter.
     MFSampleExtension_HDCP_FrameCounter: TGUID = '{9d389c60-f507-4aa6-a40a-71027a02f3de}';
+	
+	
+// MFSampleExtension_Timestamp  
+// Type: int64 
+// { 1e436999-69be-4c7a-9369-70068c0260cb } MFSampleExtension_Timestamp  {INT64 }
+// The timestamp of a sample
+// 
+MFSampleExtension_Timestamp: TGUID = '{1e436999-69be-4c7a-9369-70068c0260cb}';
+
+// MFSampleExtension_RepeatFrame {88BE738F-0711-4F42-B458-344AED42EC2F}
+// Type: UINT32
+// This UINT32 when set to 1 indicates that the frame is a repeat of the previous frame
+MFSampleExtension_RepeatFrame: TGUID = '{88BE738F-0711-4F42-B458-344AED42EC2F}';
+
+// MFT_ENCODER_ERROR {C8D1EDA4-98E4-41D5-9297-44F53852F90E}
+// Type: GUID 
+// This is the GUID of a property that caused the encoder MFT to fail initialization 
+MFT_ENCODER_ERROR: TGUID = '{C8D1EDA4-98E4-41D5-9297-44F53852F90E}';
+
+// MFT_GFX_DRIVER_VERSION_ID_Attribute {F34B9093-05E0-4B16-993D-3E2A2CDE6AD3}
+// Type: WSTR
+// For hardware MFTs, this attribute allows the HMFT to report the graphics driver version.
+MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6AD3}';
+
 
     /// //////////////////////////////////////////////////////////////////////////
 
