@@ -1,4 +1,8 @@
-unit CMC.MFPlay;
+unit Win32.MFPlay;
+
+// Updated to SDK 10.0.17763.0
+// (c) Translation to Pascal by Norbert Sonnleitner
+
 
 {$IFDEF FPC}
 {$mode delphi}
@@ -11,7 +15,7 @@ interface
 
 uses
     Windows, Classes, SysUtils, ActiveX, ShlObj,
-    CMC.WTypes, CMC.MFIdl, CMC.EVR, CMC.MFObjects;
+    CMC.WTypes, CMC.MFIdl, CMC.EVR, Win32.MFObjects;
 
 const
     MFPlay_DLL = 'MFPlay.dll';
@@ -70,9 +74,9 @@ type
         function Pause(): HResult; stdcall;
         function Stop(): HResult; stdcall;
         function FrameStep(): HResult; stdcall;
-        function SetPosition(const guidPositionType: TGUID; const pvPositionValue: PROPVARIANT): HResult; stdcall;
-        function GetPosition(const guidPositionType: TGUID; out pvPositionValue: PROPVARIANT): HResult; stdcall;
-        function GetDuration(const guidPositionType: TGUID; out pvDurationValue: PROPVARIANT): HResult; stdcall;
+        function SetPosition(const guidPositionType: TGUID; const pvPositionValue: PPROPVARIANT): HResult; stdcall;
+        function GetPosition(const guidPositionType: TGUID; out pvPositionValue: TPROPVARIANT): HResult; stdcall;
+        function GetDuration(const guidPositionType: TGUID; out pvDurationValue: TPROPVARIANT): HResult; stdcall;
         function SetRate(flRate: single): HResult; stdcall;
         function GetRate(out pflRate: single): HResult; stdcall;
         function GetSupportedRates(fForwardDirection: boolean; out pflSlowestRate: single; out pflFastestRate: single): HResult; stdcall;
@@ -255,7 +259,7 @@ type
         pwszSite: LPCWSTR;
         pwszRealm: LPCWSTR;
         pwszPackage: LPCWSTR;
-        nRetries: LONGINT;
+        nRetries: longint;
         flags: TMFP_CREDENTIAL_FLAGS;
         pCredential: IMFNetCredential;
     end;

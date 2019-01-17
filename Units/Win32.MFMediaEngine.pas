@@ -1,4 +1,7 @@
-unit CMC.MFMediaEngine;
+unit Win32.MFMediaEngine;
+
+// Updated to SDK 10.0.17763.0
+// (c) Translation to Pascal by Norbert Sonnleitner
 
 {$IFDEF FPC}
 {$mode delphi}
@@ -8,7 +11,9 @@ interface
 
 uses
     Windows, Classes, SysUtils, ActiveX,
-    CMC.MFIdl, CMC.MFObjects, CMC.MFTransform;
+    ShlObj,
+    CMC.WTypes,
+    Win32.MFIdl, Win32.MFObjects, Win32.MFTransform;
 
 const
     IID_IMFMediaError: TGUID = '{fc0e10d2-ab2a-4501-a951-06bb1075184c}';
@@ -52,11 +57,24 @@ const
     IID_IMFTimedTextRegion: TGUID = '{c8d22afc-bc47-4bdf-9b04-787e49ce3f58}';
     IID_IMFTimedTextBinary: TGUID = '{4ae3a412-0545-43c4-bf6f-6b97a5c6c432}';
     IID_IMFTimedTextCueList: TGUID = '{ad128745-211b-40a0-9981-fe65f166d0fd}';
+    IID_IMFMediaEngineAudioEndpointId: TGUID = '{7a3bac98-0e76-49fb-8c20-8a86fd98eaf2}';
+    IID_IMFMediaSourceExtensionLiveSeekableRange: TGUID = '{5D1ABFD6-450A-4D92-9EFC-D6B6CBC1F4DA}';
+    IID_IMFMediaEngineTransferSource: TGUID = '{24230452-fe54-40cc-94f3-fcc394c340d6}';
+    IID_IMFMediaEngineEMENotify: TGUID = '{9e184d15-cdb7-4f86-b49e-566689f4a601}';
+    IID_IMFMediaKeySessionNotify2: TGUID = '{c3a9e92a-da88-46b0-a110-6cf953026cb9}';
+    IID_IMFMediaKeySystemAccess: TGUID = '{aec63fda-7a97-4944-b35c-6c6df8085cc3}';
+    IID_IMFMediaEngineClassFactory3: TGUID = '{3787614f-65f7-4003-b673-ead8293a0e60}';
+    IID_IMFMediaKeys2: TGUID = '{45892507-ad66-4de2-83a2-acbb13cd8d43}';
+    IID_IMFMediaKeySession2: TGUID = '{e9707e05-6d55-4636-b185-3de21210bd75}';
+
 
 const
     MF_MSE_CALLBACK: TGUID = '{9063a7c0-42c5-4ffd-a8a8-6fcf9ea3d00c}';
     MF_MSE_ACTIVELIST_CALLBACK: TGUID = '{949bda0f-4549-46d5-ad7f-b846e1ab1652}';
     MF_MSE_BUFFERLIST_CALLBACK: TGUID = '{42e669b0-d60e-4afb-a85b-d8e5fe6bdab5}';
+    MF_MSE_VP9_SUPPORT: TGUID = '{92d78429-d88b-4ff0-8322-803efa6e9626}';
+    MF_MSE_OPUS_SUPPORT: TGUID = '{4d224cc1-8cc4-48a3-a7a7-e4c16ce6388a}';
+
     MF_MEDIA_ENGINE_NEEDKEY_CALLBACK: TGUID = '{7ea80843-b6e4-432c-8ea4-7848ffe4220e}';
     MF_MEDIA_ENGINE_CALLBACK: TGUID = '{c60381b8-83a4-41f8-a3d0-de05076849a9}';
     MF_MEDIA_ENGINE_DXGI_MANAGER: TGUID = '{065702da-1094-486d-8617-ee7cc4ee4648}';
@@ -76,26 +94,41 @@ const
     MF_MEDIA_ENGINE_BROWSER_COMPATIBILITY_MODE_IE10: TGUID = '{11a47afd-6589-4124-b312-6158ec517fc3}';
     MF_MEDIA_ENGINE_BROWSER_COMPATIBILITY_MODE_IE11: TGUID = '{1cf1315f-ce3f-4035-9391-16142f775189}';
     MF_MEDIA_ENGINE_BROWSER_COMPATIBILITY_MODE_IE_EDGE: TGUID = '{a6f3e465-3aca-442c-a3f0-ad6ddad839ae}';
-	MF_MEDIA_ENGINE_COMPATIBILITY_MODE: TGUID = 				'{3ef26ad4-dc54-45de-b9af-76c8c66bfa8e}';
-	MF_MEDIA_ENGINE_COMPATIBILITY_MODE_WWA_EDGE: TGUID = 		'{15b29098-9f01-4e4d-b65a-c06c6c89da2a}';
-	MF_MEDIA_ENGINE_COMPATIBILITY_MODE_WIN10: TGUID = 			'{5b25e089-6ca7-4139-a2cb-fcaab39552a3}';
+    MF_MEDIA_ENGINE_COMPATIBILITY_MODE: TGUID = '{3ef26ad4-dc54-45de-b9af-76c8c66bfa8e}';
+    MF_MEDIA_ENGINE_COMPATIBILITY_MODE_WWA_EDGE: TGUID = '{15b29098-9f01-4e4d-b65a-c06c6c89da2a}';
+    MF_MEDIA_ENGINE_COMPATIBILITY_MODE_WIN10: TGUID = '{5b25e089-6ca7-4139-a2cb-fcaab39552a3}';
 
-	
+
     MF_MEDIA_ENGINE_SOURCE_RESOLVER_CONFIG_STORE: TGUID = '{0ac0c497-b3c4-48c9-9cde-bb8ca2442ca3}';
     MF_MEDIA_ENGINE_TRACK_ID: TGUID = '{65bea312-4043-4815-8eab-44dce2ef8f2a}';
     MF_MEDIA_ENGINE_TELEMETRY_APPLICATION_ID: TGUID = '{1e7b273b-a7e4-402a-8f51-c48e88a2cabc}';
+    MF_MEDIA_ENGINE_SYNCHRONOUS_CLOSE: TGUID = '{c3c2e12f-7e0e-4e43-b91c-dc992ccdfa5e}';
+    MF_MEDIA_ENGINE_MEDIA_PLAYER_MODE: TGUID = '{3ddd8d45-5aa1-4112-82e5-36f6a2197e6e}';
+
     CLSID_MFMediaEngineClassFactory: TGUID = '{b44392da-499b-446b-a4cb-005fead0e6d5}';
     MF_MEDIA_ENGINE_TIMEDTEXT: TGUID = '{805ea411-92e0-4e59-9b6e-5c7d7915e64f}';
     MF_MEDIA_ENGINE_CONTINUE_ON_CODEC_ERROR: TGUID = '{dbcdb7f9-48e4-4295-b70d-d518234eeb38}';
+    MF_MEDIA_ENGINE_EME_CALLBACK: TGUID = '{494553a7-a481-4cb7-bec5-380903513731}';
 
+    MF_EME_INITDATATYPES: TPROPERTYKEY = (fmtid: '{497d231b-4eb9-4df0-b474-b9afeb0adf38}'; pid: PID_FIRST_USABLE + $00000001);
+    MF_EME_DISTINCTIVEID: TPROPERTYKEY = (fmtid: '{7dc9c4a5-12be-497e-8bff-9b60b2dc5845}'; pid: PID_FIRST_USABLE + $00000002);
+    MF_EME_PERSISTEDSTATE: TPROPERTYKEY = (fmtid: '{5d4df6ae-9af1-4e3d-955b-0e4bd22fedf0}'; pid: PID_FIRST_USABLE + $00000003);
+    MF_EME_AUDIOCAPABILITIES: TPROPERTYKEY = (fmtid: '{980fbb84-297d-4ea7-895f-bcf28a462881}'; pid: PID_FIRST_USABLE + $00000004);
+    MF_EME_VIDEOCAPABILITIES: TPROPERTYKEY = (fmtid: '{b172f83d-30dd-4c10-8006-ed53da4d3bdb}'; pid: PID_FIRST_USABLE + $00000005);
+    MF_EME_LABEL: TPROPERTYKEY = (fmtid: '{9eae270e-b2d7-4817-b88f-540099f2ef4e}'; pid: PID_FIRST_USABLE + $00000006);
+    MF_EME_SESSIONTYPES: TPROPERTYKEY = (fmtid: '{7623384f-00f5-4376-8698-3458db030ed5}'; pid: PID_FIRST_USABLE + $00000007);
+    MF_EME_ROBUSTNESS: TPROPERTYKEY = (fmtid: '{9d3d2b9e-7023-4944-a8f5-ecca52a46990}'; pid: PID_FIRST_USABLE + $00000001);
+    MF_EME_CONTENTTYPE: TPROPERTYKEY = (fmtid: '{289fb1fc-d9c4-4cc7-b2be-972b0e9b283a}'; pid: PID_FIRST_USABLE + $00000002);
+    MF_EME_CDM_INPRIVATESTOREPATH: TPROPERTYKEY = (fmtid: '{ec305fd9-039f-4ac8-98da-e7921e006a90}'; pid: PID_FIRST_USABLE + $00000001);
+    MF_EME_CDM_STOREPATH: TPROPERTYKEY = (fmtid: '{f795841e-99f9-44d7-afc0-d309c04c94ab}'; pid: PID_FIRST_USABLE + $00000002);
 
 const
     MF_INVALID_PRESENTATION_TIME = $8000000000000000;
 
 type
     {$IFNDEF FPC}
-     BSTR = POLESTR;
-     PDWORDLONG = ^UINT64;
+    BSTR = POLESTR;
+    PDWORDLONG = ^UINT64;
     {$ENDIF}
 
     TMF_MEDIA_ENGINE_ERR = (
@@ -165,7 +198,9 @@ type
         MF_MEDIA_ENGINE_EVENT_OPMINFO = 1011,
         MF_MEDIA_ENGINE_EVENT_RESOURCELOST = 1012,
         MF_MEDIA_ENGINE_EVENT_DELAYLOADEVENT_CHANGED = 1013,
-        MF_MEDIA_ENGINE_EVENT_STREAMRENDERINGERROR = 1014
+        MF_MEDIA_ENGINE_EVENT_STREAMRENDERINGERROR = 1014,
+        MF_MEDIA_ENGINE_EVENT_SUPPORTEDRATES_CHANGED = 1015,
+        MF_MEDIA_ENGINE_EVENT_AUDIOENDPOINTCHANGE = 1016
         );
 
 
@@ -297,16 +332,16 @@ type
     IMFMediaEngineEx = interface(IMFMediaEngine)
         ['{83015ead-b1e6-40d0-a98a-37145ffe1ad1}']
         function SetSourceFromByteStream(pByteStream: IMFByteStream; pURL: BSTR): HResult; stdcall;
-        function GetStatistics(StatisticID: TMF_MEDIA_ENGINE_STATISTIC; out pStatistic: PROPVARIANT): HResult; stdcall;
+        function GetStatistics(StatisticID: TMF_MEDIA_ENGINE_STATISTIC; out pStatistic: TPROPVARIANT): HResult; stdcall;
         function UpdateVideoStream(const pSrc: TMFVideoNormalizedRect; const pDst: TRECT; const pBorderClr: TMFARGB): HResult; stdcall;
         function GetBalance(): double; stdcall;
         function SetBalance(balance: double): HResult; stdcall;
         function IsPlaybackRateSupported(rate: double): boolean; stdcall;
-        function FrameStep(Forward: boolean): HResult; stdcall;
+        function FrameStep(_Forward: boolean): HResult; stdcall;
         function GetResourceCharacteristics(out pCharacteristics: DWORD): HResult; stdcall;
-        function GetPresentationAttribute(const guidMFAttribute: TGUID; out pvValue: PROPVARIANT): HResult; stdcall;
+        function GetPresentationAttribute(const guidMFAttribute: TGUID; out pvValue: TPROPVARIANT): HResult; stdcall;
         function GetNumberOfStreams(out pdwStreamCount: DWORD): HResult; stdcall;
-        function GetStreamAttribute(dwStreamIndex: DWORD; const guidMFAttribute: TGUID; out pvValue: PROPVARIANT): HResult; stdcall;
+        function GetStreamAttribute(dwStreamIndex: DWORD; const guidMFAttribute: TGUID; out pvValue: TPROPVARIANT): HResult; stdcall;
         function GetStreamSelection(dwStreamIndex: DWORD; out pEnabled: boolean): HResult; stdcall;
         function SetStreamSelection(dwStreamIndex: DWORD; Enabled: boolean): HResult; stdcall;
         function ApplyStreamSelections(): HResult; stdcall;
@@ -333,6 +368,12 @@ type
         function SetRealTimeMode(fEnable: boolean): HResult; stdcall;
         function SetCurrentTimeEx(seekTime: double; seekMode: TMF_MEDIA_ENGINE_SEEK_MODE): HResult; stdcall;
         function EnableTimeUpdateTimer(fEnableTimer: boolean): HResult; stdcall;
+    end;
+
+    IMFMediaEngineAudioEndpointId = interface(IUnknown)
+        ['{7a3bac98-0e76-49fb-8c20-8a86fd98eaf2}']
+        function SetAudioEndpointId(pszEndpointId: LPCWSTR): HResult; stdcall;
+        function GetAudioEndpointId(out ppszEndpointId: LPWSTR): HResult; stdcall;
     end;
 
 
@@ -372,7 +413,8 @@ type
 
     IAudioSourceProvider = interface(IUnknown)
         ['{EBBAF249-AFC2-4582-91C6-B60DF2E84954}']
-        function ProvideInput(dwSampleCount: DWORD; var pdwChannelCount: DWORD; out pInterleavedAudioData: PSingle): HResult; stdcall;
+        function ProvideInput(dwSampleCount: DWORD; var pdwChannelCount: DWORD;
+            out pInterleavedAudioData {arraysize: dwSampleCount * pdwChannelCount}: PSingle): HResult; stdcall;
     end;
 
     IMFMediaEngineWebSupport = interface(IUnknown)
@@ -381,6 +423,17 @@ type
         function ConnectWebAudio(dwSampleRate: DWORD; out ppSourceProvider: IAudioSourceProvider): HResult; stdcall;
         function DisconnectWebAudio(): HResult; stdcall;
     end;
+
+    TMF_MSE_VP9_SUPPORT_TYPE = (
+        MF_MSE_VP9_SUPPORT_DEFAULT = 0,
+        MF_MSE_VP9_SUPPORT_ON = 1,
+        MF_MSE_VP9_SUPPORT_OFF = 2
+        );
+
+    TMF_MSE_OPUS_SUPPORT_TYPE = (
+        MF_MSE_OPUS_SUPPORT_ON = 0,
+        MF_MSE_OPUS_SUPPORT_OFF = 1
+        );
 
 
     IMFMediaSourceExtensionNotify = interface(IUnknown)
@@ -470,6 +523,12 @@ type
         function SetEndOfStream(error: TMF_MSE_ERROR): HResult; stdcall;
         function IsTypeSupported(_type: BSTR): boolean; stdcall;
         function GetSourceBuffer(dwStreamIndex: DWORD): IMFSourceBuffer; stdcall;
+    end;
+
+    IMFMediaSourceExtensionLiveSeekableRange = interface(IUnknown)
+        ['{5D1ABFD6-450A-4D92-9EFC-D6B6CBC1F4DA}']
+        function SetLiveSeekableRange(start: double; _end: double): HResult; stdcall;
+        function ClearLiveSeekableRange(): HResult; stdcall;
     end;
 
 
@@ -609,6 +668,9 @@ type
             out ppKeys: IMFMediaKeys): HResult; stdcall;
     end;
 
+
+
+
     IMFMediaEngineSupportsSourceTransfer = interface(IUnknown)
         ['{a724b056-1b2e-4642-a6f3-db9420c52908}']
         function ShouldTransferSource(out pfShouldTransfer: boolean): HResult; stdcall;
@@ -622,6 +684,11 @@ type
     IMFExtendedDRMTypeSupport = interface(IUnknown)
         ['{332EC562-3758-468D-A784-E38F23552128}']
         function IsTypeSupportedEx(_type: BSTR; keySystem: BSTR; out pAnswer: TMF_MEDIA_ENGINE_CANPLAY): HResult; stdcall;
+    end;
+
+    IMFMediaEngineTransferSource = interface(IUnknown)
+        ['{24230452-fe54-40cc-94f3-fcc394c340d6}']
+        function TransferSourceToMediaEngine(destination: IMFMediaEngine): HResult; stdcall;
     end;
 
 
@@ -852,6 +919,69 @@ type
         MF_MEDIA_ENGINE_STREAMTYPE_FAILED_AUDIO = 1,
         MF_MEDIA_ENGINE_STREAMTYPE_FAILED_VIDEO = 2
         );
+
+
+
+    IMFMediaEngineEMENotify = interface(IUnknown)
+        ['{9e184d15-cdb7-4f86-b49e-566689f4a601}']
+        procedure Encrypted(const pbInitData: PByte; cb: DWORD; bstrInitDataType: BSTR); stdcall;
+        procedure WaitingForKey(); stdcall;
+    end;
+
+
+
+    TMF_MEDIAKEYS_REQUIREMENT = (
+        MF_MEDIAKEYS_REQUIREMENT_REQUIRED = 1,
+        MF_MEDIAKEYS_REQUIREMENT_OPTIONAL = 2,
+        MF_MEDIAKEYS_REQUIREMENT_NOT_ALLOWED = 3
+        );
+
+
+    IMFMediaKeySessionNotify2 = interface(IMFMediaKeySessionNotify)
+        ['{c3a9e92a-da88-46b0-a110-6cf953026cb9}']
+        procedure KeyMessage2(eMessageType: TMF_MEDIAKEYSESSION_MESSAGETYPE; destinationURL: BSTR; const pbMessage: PBYTE;
+            cbMessage: DWORD); stdcall;
+        procedure KeyStatusChange(); stdcall;
+    end;
+
+    IMFMediaKeys2 = interface;
+
+    IMFMediaKeySystemAccess = interface(IUnknown)
+        ['{aec63fda-7a97-4944-b35c-6c6df8085cc3}']
+        function CreateMediaKeys(pCdmCustomConfig: IPropertyStore; out ppKeys: IMFMediaKeys2): HResult; stdcall;
+        function get_SupportedConfiguration(out ppSupportedConfiguration: IPropertyStore): HResult; stdcall;
+        function get_KeySystem(out pKeySystem: BSTR): HResult; stdcall;
+    end;
+
+
+    IMFMediaEngineClassFactory3 = interface(IUnknown)
+        ['{3787614f-65f7-4003-b673-ead8293a0e60}']
+        function CreateMediaKeySystemAccess(keySystem: BSTR; ppSupportedConfigurationsArray {arraysize: uSize}: IPropertyStore;
+            uSize: UINT; out ppKeyAccess: IMFMediaKeySystemAccess): HResult; stdcall;
+    end;
+
+    IMFMediaKeySession2 = interface;
+
+    IMFMediaKeys2 = interface(IMFMediaKeys)
+        ['{45892507-ad66-4de2-83a2-acbb13cd8d43}']
+        function CreateSession2(eSessionType: TMF_MEDIAKEYSESSION_TYPE; pMFMediaKeySessionNotify2: IMFMediaKeySessionNotify2;
+            out ppSession: IMFMediaKeySession2): HResult; stdcall;
+        function SetServerCertificate(const pbServerCertificate: PBYTE; cb: DWORD): HResult; stdcall;
+        function GetDOMException(systemCode: HRESULT; out code: HRESULT): HResult; stdcall;
+    end;
+
+
+
+    IMFMediaKeySession2 = interface(IMFMediaKeySession)
+        ['{e9707e05-6d55-4636-b185-3de21210bd75}']
+        function get_KeyStatuses(out pKeyStatusesArray: PMFMediaKeyStatus; out puSize: UINT): HResult; stdcall;
+        function Load(bstrSessionId: BSTR; out pfLoaded: boolean): HResult; stdcall;
+        function GenerateRequest(initDataType: BSTR; const pbInitData: PBYTE; cb: DWORD): HResult; stdcall;
+        function get_Expiration(out dblExpiration: double): HResult; stdcall;
+        function Remove(): HResult; stdcall;
+        function Shutdown(): HResult; stdcall;
+    end;
+
 
 
 

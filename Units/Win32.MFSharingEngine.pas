@@ -1,4 +1,7 @@
-unit CMC.MFSharingEngine;
+unit Win32.MFSharingEngine;
+
+// Updated to SDK 10.0.17763.0
+// (c) Translation to Pascal by Norbert Sonnleitner
 
 {$IFDEF FPC}
 {$mode delphi}
@@ -7,8 +10,8 @@ interface
 
 uses
     Windows, Classes, SysUtils, ActiveX,
-    CMC.MFObjects,
-    CMC.MFMediaEngine, CMC.Inspectable;
+    Win32.MFObjects,
+    Win32.MFMediaEngine, CMC.Inspectable;
 
 const
     IID_IMFSharingEngineClassFactory: TGUID = '{2BA61F92-8305-413B-9733-FAF15F259384}';
@@ -22,8 +25,6 @@ const
 
 
 const
-
-
     MF_MEDIA_SHARING_ENGINE_DEVICE_NAME: TGUID = '{771e05d1-862f-4299-95ac-ae81fd14f3e7}';
     MF_MEDIA_SHARING_ENGINE_DEVICE: TGUID = '{b461c58a-7a08-4b98-99a8-70fd5f3badfd}';
     MF_MEDIA_SHARING_ENGINE_INITIAL_SEEK_TIME: TGUID = '{6f3497f5-d528-4a4f-8dd7-db36657ec4c9}';
@@ -31,6 +32,7 @@ const
     MF_PREFERRED_SOURCE_URI: TGUID = '{5fc85488-436a-4db8-90af-4db402ae5c57}';
     MF_SHARING_ENGINE_SHAREDRENDERER: TGUID = '{efa446a0-73e7-404e-8ae2-fef60af5a32b}';
     MF_SHARING_ENGINE_CALLBACK: TGUID = '{57dc1e95-d252-43fa-9bbc-180070eefe6d}';
+	
     CLSID_MFMediaSharingEngineClassFactory: TGUID = '{f8e307fb-6d45-4ad3-9993-66cd5a529659}';
     CLSID_MFImageSharingEngineClassFactory: TGUID = '{b22c3339-87f3-4059-a0c5-037aa9707eaf}';
     CLSID_PlayToSourceClassFactory: TGUID = '{DA17539A-3DC3-42C1-A749-A183B51F085E}';
@@ -39,8 +41,6 @@ const
 
 
 type
-
-
     TDEVICE_INFO = record
         pFriendlyDeviceName: BSTR;
         pUniqueDeviceName: BSTR;
@@ -48,6 +48,8 @@ type
         pModelName: BSTR;
         pIconURL: BSTR;
     end;
+	
+	PDEVICE_INFO = ^TDEVICE_INFO;
 
     TMF_SHARING_ENGINE_EVENT = (
         MF_SHARING_ENGINE_EVENT_DISCONNECT = 2000,

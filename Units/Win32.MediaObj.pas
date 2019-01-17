@@ -1,4 +1,7 @@
-unit CMC.MediaObj;
+unit Win32.MediaObj;
+
+// Updated to SDK 10.0.17763.0
+// (c) Translation to Pascal by Norbert Sonnleitner
 
 {$IFDEF FPC}
 {$mode delphi}
@@ -23,7 +26,7 @@ const
 type
     {$IFNDEF FPC}
     CLSID = TGUID;
-    PCLSID  = ^CLSID;
+    PCLSID = ^CLSID;
     {$ENDIF}
     // TDMO_MEDIA_TYPE = TAM_MEDIA_TYPE;
 
@@ -128,7 +131,7 @@ type
             rtTimelength: TREFERENCE_TIME): HResult; stdcall;
         function ProcessOutput(dwFlags: DWORD; cOutputBufferCount: DWORD; out pOutputBuffers: PDMO_OUTPUT_DATA_BUFFER;
             out pdwStatus: DWORD): HResult; stdcall;
-        function Lock(bLock: LONGINT): HResult; stdcall;
+        function Lock(bLock: longint): HResult; stdcall;
     end;
 
     IEnumDMO = interface(IUnknown)
@@ -150,7 +153,7 @@ type
 
     IMediaObjectInPlace = interface(IUnknown)
         ['{651b9ad0-0fc7-4aa9-9538-d89931010741}']
-        function Process(ulSize: ULONG; var pData: PBYTE; refTimeStart: TREFERENCE_TIME; dwFlags: DWORD): HResult; stdcall;
+        function Process(ulSize: ULONG; out pData: PBYTE; refTimeStart: TREFERENCE_TIME; dwFlags: DWORD): HResult; stdcall;
         function Clone(out ppMediaObject: IMediaObjectInPlace): HResult; stdcall;
         function GetLatency(out pLatencyTime: TREFERENCE_TIME): HResult; stdcall;
     end;

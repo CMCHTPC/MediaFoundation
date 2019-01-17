@@ -1,4 +1,4 @@
-unit CMC.MFMP2DLNA;
+unit Win32.MFMP2DLNA;
 
 {$IFDEF FPC}
 {$mode delphi}

@@ -6,7 +6,13 @@
 // Copyright (c) 1999 - 2002, Microsoft Corporation.  All rights reserved.
 // ------------------------------------------------------------------------------
 
-unit CMC.DXVA;
+
+// Checked and Updated to SDK 10.0.17763.0
+// (c) Translation to Pascal by Norbert Sonnleitner
+// DoTo: readDXVA_MBskipsFollowing etc macros are missing
+
+unit Win32.DXVA;
+
 {$IFDEF FPC}
 {$MODE delphi}
 {$ENDIF}
@@ -110,6 +116,11 @@ const
     DXVA_COPPQueryHDCPKeyData: TGUID = '{0db59d74-a992-492e-a0bd-c23fda564e00}';
     DXVA_COPPQueryBusData: TGUID = '{c6f4d673-6174-4184-8e35-f6db5200bcba}';
     DXVA_COPPQuerySignaling: TGUID = '{6629a591-3b79-4cf3-924a-11e8e7811671}';
+
+
+    DXVA_ModeVP9_VLD_Profile0: TGUID = '{463707f8-a1d0-4585-876d-83aa6d60b89e}';
+    DXVA_ModeVP9_VLD_10bit_Profile2: TGUID = '{a4c749ef-6ecf-48aa-8448-50a7a1165ff7}';
+    DXVA_ModeVP8_VLD: TGUID = '{90b899ea-3a62-4705-88b3-8df04b2744e7}';
 
 const
     DXVA_RESTRICTED_MODE_UNRESTRICTED = $FFFF;
@@ -517,9 +528,7 @@ type
     TDXVA_Sample8 = array [0 .. DXVA_USUAL_BLOCK_SIZE - 1] of shortint;
 
     (* Deblocking Filter Control Structure *)
-
     TDXVA_DeblockingEdgeControl = byte;
-
     PDXVA_DeblockingEdgeControl = ^TDXVA_DeblockingEdgeControl;
 
     (* Macroblock Control Command Data Structures *)
@@ -605,13 +614,10 @@ type
 
     (* How to load alpha blending graphic data *)
     TDXVA_ConfigAlphaLoad = packed record
-
         // Operation Indicated
         dwFunction: TDXVA_ConfigQueryOrReplyFunc;
-
         // Alignment
         dwReservedBits: array [0 .. 2] of DWORD;
-
         bConfigDataType: byte;
     end;
 
@@ -619,13 +625,10 @@ type
 
     (* How to combine alpha blending graphic data *)
     TDXVA_ConfigAlphaCombine = packed record
-
         // Operation Indicated
         dwFunction: TDXVA_ConfigQueryOrReplyFunc;
-
         // Alignment
         dwReservedBits: array [0 .. 2] of DWORD;
-
         bConfigBlendType: byte;
         bConfigPictureResizing: byte;
         bConfigOnlyUsePicDestRectArea: byte;
@@ -693,11 +696,9 @@ type
     (* H.264/AVC picture entry data structure *)
     TDXVA_PicEntry_H264 = packed record (* 1 byte *)
         case integer of
-            0:
-                (Index7Bits: 0 .. 127;
-                    AssociatedFlag: 0 .. 1);
-            1:
-                (bPicEntry: UCHAR);
+            0: (Index7Bits: 0 .. 127;
+                AssociatedFlag: 0 .. 1);
+            1: (bPicEntry: UCHAR);
 
     end;
 
@@ -709,72 +710,70 @@ type
         wFrameHeightInMbsMinus1: USHORT;
         CurrPic: TDXVA_PicEntry_H264; (* flag is bot field flag *)
         num_ref_frames: UCHAR;
-        // dummyrecord: record
+            // dummyrecord: record
         case integer of
-            0:
-                (field_pic_flag: 0 .. 1;
-                    MbaffFrameFlag: 0 .. 1;
-                    residual_colour_transform_flag: 0 .. 1;
-                    sp_for_switch_flag: 0 .. 1;
-                    chroma_format_idc: 0 .. 3;
-                    RefPicFlag: 0 .. 1;
-                    constrained_intra_pred_flag: 0 .. 1;
+            0: (field_pic_flag: 0 .. 1;
+                MbaffFrameFlag: 0 .. 1;
+                residual_colour_transform_flag: 0 .. 1;
+                sp_for_switch_flag: 0 .. 1;
+                chroma_format_idc: 0 .. 3;
+                RefPicFlag: 0 .. 1;
+                constrained_intra_pred_flag: 0 .. 1;
 
-                    weighted_pred_flag: 0 .. 1;
-                    weighted_bipred_idc: 0 .. 3;
-                    MbsConsecutiveFlag: 0 .. 1;
-                    frame_mbs_only_flag: 0 .. 1;
-                    transform_8x8_mode_flag: 0 .. 1;
-                    MinLumaBipredSize8x8Flag: 0 .. 1;
-                    IntraPicFlag: 0 .. 1;
+                weighted_pred_flag: 0 .. 1;
+                weighted_bipred_idc: 0 .. 3;
+                MbsConsecutiveFlag: 0 .. 1;
+                frame_mbs_only_flag: 0 .. 1;
+                transform_8x8_mode_flag: 0 .. 1;
+                MinLumaBipredSize8x8Flag: 0 .. 1;
+                IntraPicFlag: 0 .. 1;
 
-                    bit_depth_luma_minus8: UCHAR;
-                    bit_depth_chroma_minus8: UCHAR;
+                bit_depth_luma_minus8: UCHAR;
+                bit_depth_chroma_minus8: UCHAR;
 
-                    Reserved16Bits: USHORT;
-                    StatusReportFeedbackNumber: UINT;
+                Reserved16Bits: USHORT;
+                StatusReportFeedbackNumber: UINT;
 
-                    RefFrameList: array [0 .. 15] of TDXVA_PicEntry_H264; (* flag LT *)
-                    CurrFieldOrderCnt: array [0 .. 1] of integer;
-                    FieldOrderCntList: array [0 .. 15, 0 .. 1] of integer;
+                RefFrameList: array [0 .. 15] of TDXVA_PicEntry_H264; (* flag LT *)
+                CurrFieldOrderCnt: array [0 .. 1] of integer;
+                FieldOrderCntList: array [0 .. 15, 0 .. 1] of integer;
 
-                    pic_init_qs_minus26: char;
-                    chroma_qp_index_offset: char; (* also used for QScb *)
-                    second_chroma_qp_index_offset: char; (* also for QScr *)
-                    ContinuationFlag: UCHAR;
+                pic_init_qs_minus26: char;
+                chroma_qp_index_offset: char; (* also used for QScb *)
+                second_chroma_qp_index_offset: char; (* also for QScr *)
+                ContinuationFlag: UCHAR;
 
-                    (* remainder for parsing *)
-                    pic_init_qp_minus26: char;
-                    num_ref_idx_l0_active_minus1: UCHAR;
-                    num_ref_idx_l1_active_minus1: UCHAR;
-                    Reserved8BitsA: UCHAR;
+                (* remainder for parsing *)
+                pic_init_qp_minus26: char;
+                num_ref_idx_l0_active_minus1: UCHAR;
+                num_ref_idx_l1_active_minus1: UCHAR;
+                Reserved8BitsA: UCHAR;
 
-                    FrameNumList: array [0 .. 15] of USHORT;
-                    UsedForReferenceFlags: UINT;
-                    NonExistingFrameFlags: USHORT;
-                    frame_num: USHORT;
+                FrameNumList: array [0 .. 15] of USHORT;
+                UsedForReferenceFlags: UINT;
+                NonExistingFrameFlags: USHORT;
+                frame_num: USHORT;
 
-                    log2_max_frame_num_minus4: UCHAR;
-                    pic_order_cnt_type: UCHAR;
-                    log2_max_pic_order_cnt_lsb_minus4: UCHAR;
-                    delta_pic_order_always_zero_flag: UCHAR;
+                log2_max_frame_num_minus4: UCHAR;
+                pic_order_cnt_type: UCHAR;
+                log2_max_pic_order_cnt_lsb_minus4: UCHAR;
+                delta_pic_order_always_zero_flag: UCHAR;
 
-                    direct_8x8_inference_flag: UCHAR;
-                    entropy_coding_mode_flag: UCHAR;
-                    pic_order_present_flag: UCHAR;
-                    num_slice_groups_minus1: UCHAR;
+                direct_8x8_inference_flag: UCHAR;
+                entropy_coding_mode_flag: UCHAR;
+                pic_order_present_flag: UCHAR;
+                num_slice_groups_minus1: UCHAR;
 
-                    slice_group_map_type: UCHAR;
-                    deblocking_filter_control_present_flag: UCHAR;
-                    redundant_pic_cnt_present_flag: UCHAR;
-                    Reserved8BitsB: UCHAR;
+                slice_group_map_type: UCHAR;
+                deblocking_filter_control_present_flag: UCHAR;
+                redundant_pic_cnt_present_flag: UCHAR;
+                Reserved8BitsB: UCHAR;
 
-                    slice_group_change_rate_minus1: USHORT;
+                slice_group_change_rate_minus1: USHORT;
 
-                    SliceGroupMap: array [0 .. 810 - 1] of UCHAR; (* 4b/sgmu, Size BT.601 *)
-                );
-            1:
-                (wBitFields: USHORT);
+                SliceGroupMap: array [0 .. 810 - 1] of UCHAR; (* 4b/sgmu, Size BT.601 *)
+            );
+            1: (wBitFields: USHORT);
 
     end;
 
@@ -834,50 +833,53 @@ type
     (* H.264/AVC macroblock control command data structure *)
     TDXVA_MBctrl_H264 = packed record
         case integer of
-            0:
-                (bSliceID: 0 .. 255; (* 1 byte *)
-                    MbType5Bits: 0 .. 31;
-                    IntraMbFlag: 0 .. 1;
-                    mb_field_decoding_flag: 0 .. 1;
-                    transform_size_8x8_flag: 0 .. 1; (* 2 bytes *)
-                    HostResidDiff: 0 .. 1;
-                    DcBlockCodedCrFlag: 0 .. 1;
-                    DcBlockCodedCbFlag: 0 .. 1;
-                    DcBlockCodedYFlag: 0 .. 1;
-                    FilterInternalEdgesFlag: 0 .. 1;
-                    FilterLeftMbEdgeFlag: 0 .. 1;
-                    FilterTopMbEdgeFlag: 0 .. 1;
-                    ReservedBit: 0 .. 1;
-                    bMvQuantity: 0 .. 255; (* 4 bytes *)
+            0: (bSliceID: 0 .. 255; (* 1 byte *)
+                MbType5Bits: 0 .. 31;
+                IntraMbFlag: 0 .. 1;
+                mb_field_decoding_flag: 0 .. 1;
+                transform_size_8x8_flag: 0 .. 1; (* 2 bytes *)
+                HostResidDiff: 0 .. 1;
+                DcBlockCodedCrFlag: 0 .. 1;
+                DcBlockCodedCbFlag: 0 .. 1;
+                DcBlockCodedYFlag: 0 .. 1;
+                FilterInternalEdgesFlag: 0 .. 1;
+                FilterLeftMbEdgeFlag: 0 .. 1;
+                FilterTopMbEdgeFlag: 0 .. 1;
+                ReservedBit: 0 .. 1;
+                bMvQuantity: 0 .. 255; (* 4 bytes *)
 
-                    CurrMbAddr: USHORT; (* 6 bytes so far *)
-                    wPatternCode: array [0 .. 2] of USHORT; (* YCbCr, 16 4x4 blks, 1b each *)
-                    (* 12 bytes so far *)
-                    bQpPrime: array [0 .. 2] of UCHAR; (* Y, Cb, Cr, need just 7b QpY *)
-                    bMBresidDataQuantity: UCHAR;
-                    dwMBdataLocation: ULONG; (* offset into resid buffer *)
+                CurrMbAddr: USHORT; (* 6 bytes so far *)
+                wPatternCode: array [0 .. 2] of USHORT; (* YCbCr, 16 4x4 blks, 1b each *)
+                (* 12 bytes so far *)
+                bQpPrime: array [0 .. 2] of UCHAR; (* Y, Cb, Cr, need just 7b QpY *)
+                bMBresidDataQuantity: UCHAR;
+                dwMBdataLocation: ULONG; (* offset into resid buffer *)
                     (* 20 bytes so far *)
-                    case integer of 0: (
-                        (* start here for Intra MB's  (9 useful bytes in branch) *)
-                        LumaIntraPredModes: array [0 .. 3] of USHORT; (* 16 blocks, 4b each *)
+                case integer of
+                    0: (
+                    (* start here for Intra MB's  (9 useful bytes in branch) *)
+                    LumaIntraPredModes: array [0 .. 3] of USHORT; (* 16 blocks, 4b each *)
                         (* 28 bytes so far *)
-                        case integer of 0: (intra_chroma_pred_mode: 0 .. 3; IntraPredAvailFlags: 0 .. 31; ReservedIntraBit: 0 .. 1;
+                    case integer of
+                        0: (intra_chroma_pred_mode: 0 .. 3;
+                        IntraPredAvailFlags: 0 .. 31;
+                        ReservedIntraBit: 0 .. 1;
 
-                            ReservedIntra24Bits: array [0 .. 2] of UCHAR; ); 1: (bMbIntraStruct: UCHAR); (* 29 bytes so far *)
-                        (* 32 bytes total *)
+                        ReservedIntra24Bits: array [0 .. 2] of UCHAR;);
+                        1: (bMbIntraStruct: UCHAR); (* 29 bytes so far *)
+                    (* 32 bytes total *)
                     );
                     1: (
-                        (* start here for non-Intra MB's (12 bytes in branch) *)
-                        bSubMbShapes: UCHAR; (* 4 subMbs, 2b each *)
-                        bSubMbPredModes: UCHAR; (* 4 subMBs, 2b each *)
-                        (* 22 bytes so far *)
-                        wMvBuffOffset: USHORT; (* offset into MV buffer *)
-                        bRefPicSelect: array [0 .. 1, 0 .. 3] of UCHAR; (* 32 bytes total *)
+                    (* start here for non-Intra MB's (12 bytes in branch) *)
+                    bSubMbShapes: UCHAR; (* 4 subMbs, 2b each *)
+                    bSubMbPredModes: UCHAR; (* 4 subMBs, 2b each *)
+                    (* 22 bytes so far *)
+                    wMvBuffOffset: USHORT; (* offset into MV buffer *)
+                    bRefPicSelect: array [0 .. 1, 0 .. 3] of UCHAR; (* 32 bytes total *)
                     );
 
-                );
-            1:
-                (dwMBtype: UINT); (* 4 bytes so far *)
+            );
+            1: (dwMBtype: UINT); (* 4 bytes so far *)
     end;
 
     PDXVA_MBctrl_H264 = ^TDXVA_MBctrl_H264;
@@ -907,37 +909,35 @@ type
     TDXVA_Deblock_H264 = packed record
         CurrMbAddr: USHORT; (* dup info *)   (* 2 bytes so far *)
         case integer of
-            0:
-                (ReservedBit: 0 .. 1;
-                    FieldModeCurrentMbFlag: 0 .. 1; (* dup info *)
-                    FieldModeLeftMbFlag: 0 .. 1;
-                    FieldModeAboveMbFlag: 0 .. 1;
-                    FilterInternal8x8EdgesFlag: 0 .. 1;
-                    FilterInternal4x4EdgesFlag: 0 .. 1;
-                    FilterLeftMbEdgeFlag: 0 .. 1;
-                    FilterTopMbEdgeFlag: 0 .. 1;
+            0: (ReservedBit: 0 .. 1;
+                FieldModeCurrentMbFlag: 0 .. 1; (* dup info *)
+                FieldModeLeftMbFlag: 0 .. 1;
+                FieldModeAboveMbFlag: 0 .. 1;
+                FilterInternal8x8EdgesFlag: 0 .. 1;
+                FilterInternal4x4EdgesFlag: 0 .. 1;
+                FilterLeftMbEdgeFlag: 0 .. 1;
+                FilterTopMbEdgeFlag: 0 .. 1;
 
-                    Reserved8Bits: UCHAR; (* 4 bytes so far *)
+                Reserved8Bits: UCHAR; (* 4 bytes so far *)
 
-                    bbSinternalLeftVert: UCHAR; (* 2 bits per bS *)
-                    bbSinternalMidVert: UCHAR;
+                bbSinternalLeftVert: UCHAR; (* 2 bits per bS *)
+                bbSinternalMidVert: UCHAR;
 
-                    bbSinternalRightVert: UCHAR;
-                    bbSinternalTopHorz: UCHAR; (* 8 bytes so far *)
+                bbSinternalRightVert: UCHAR;
+                bbSinternalTopHorz: UCHAR; (* 8 bytes so far *)
 
-                    bbSinternalMidHorz: UCHAR;
-                    bbSinternalBotHorz: UCHAR; (* 10 bytes so far *)
+                bbSinternalMidHorz: UCHAR;
+                bbSinternalBotHorz: UCHAR; (* 10 bytes so far *)
 
-                    wbSLeft0: USHORT; (* 4 bits per bS (1 wasted) *)
-                    wbSLeft1: USHORT; (* 4 bits per bS (1 wasted) *)
+                wbSLeft0: USHORT; (* 4 bits per bS (1 wasted) *)
+                wbSLeft1: USHORT; (* 4 bits per bS (1 wasted) *)
 
-                    wbSTop0: USHORT; (* 4 bits per bS (1 wasted) *)
-                    wbSTop1: USHORT; (* 4b (2 wasted)  18 bytes so far *)
+                wbSTop0: USHORT; (* 4 bits per bS (1 wasted) *)
+                wbSTop1: USHORT; (* 4b (2 wasted)  18 bytes so far *)
 
-                    IndexAB: array [0 .. 2] of TDXVA_DeblockIndexAB_H264; (* Y, Cb, Cr *)
-                );
-            1:
-                (FirstByte: UCHAR);
+                IndexAB: array [0 .. 2] of TDXVA_DeblockIndexAB_H264; (* Y, Cb, Cr *)
+            );
+            1: (FirstByte: UCHAR);
     end;
 
     PDXVA_Deblock_H264 = ^TDXVA_Deblock_H264; (* 48 bytes *)
@@ -1003,87 +1003,85 @@ type
         num_ref_frames: UCHAR;
 
         case integer of
-            0:
-                (field_pic_flag: 0 .. 1;
-                    MbaffFrameFlag: 0 .. 1;
-                    residual_colour_transform_flag: 0 .. 1;
-                    sp_for_switch_flag: 0 .. 1;
-                    chroma_format_idc: 0 .. 3;
-                    RefPicFlag: 0 .. 1;
-                    constrained_intra_pred_flag: 0 .. 1;
+            0: (field_pic_flag: 0 .. 1;
+                MbaffFrameFlag: 0 .. 1;
+                residual_colour_transform_flag: 0 .. 1;
+                sp_for_switch_flag: 0 .. 1;
+                chroma_format_idc: 0 .. 3;
+                RefPicFlag: 0 .. 1;
+                constrained_intra_pred_flag: 0 .. 1;
 
-                    weighted_pred_flag: 0 .. 1;
-                    weighted_bipred_idc: 0 .. 3;
-                    MbsConsecutiveFlag: 0 .. 1;
-                    frame_mbs_only_flag: 0 .. 1;
-                    transform_8x8_mode_flag: 0 .. 1;
-                    MinLumaBipredSize8x8Flag: 0 .. 1;
-                    IntraPicFlag: 0 .. 1;
+                weighted_pred_flag: 0 .. 1;
+                weighted_bipred_idc: 0 .. 3;
+                MbsConsecutiveFlag: 0 .. 1;
+                frame_mbs_only_flag: 0 .. 1;
+                transform_8x8_mode_flag: 0 .. 1;
+                MinLumaBipredSize8x8Flag: 0 .. 1;
+                IntraPicFlag: 0 .. 1;
 
-                    bit_depth_luma_minus8: UCHAR;
-                    bit_depth_chroma_minus8: UCHAR;
+                bit_depth_luma_minus8: UCHAR;
+                bit_depth_chroma_minus8: UCHAR;
 
-                    Reserved16Bits: USHORT;
-                    StatusReportFeedbackNumber: UINT;
+                Reserved16Bits: USHORT;
+                StatusReportFeedbackNumber: UINT;
 
-                    RefFrameList: array [0 .. 15] of TDXVA_PicEntry_H264; (* flag LT *)
-                    CurrFieldOrderCnt: array [0 .. 1] of INT32;
-                    FieldOrderCntList: array [0 .. 15, 0 .. 1] of INT32;
+                RefFrameList: array [0 .. 15] of TDXVA_PicEntry_H264; (* flag LT *)
+                CurrFieldOrderCnt: array [0 .. 1] of INT32;
+                FieldOrderCntList: array [0 .. 15, 0 .. 1] of INT32;
 
-                    pic_init_qs_minus26: char;
-                    chroma_qp_index_offset: char; (* also used for QScb *)
-                    second_chroma_qp_index_offset: char; (* also for QScr *)
-                    ContinuationFlag: UCHAR;
+                pic_init_qs_minus26: char;
+                chroma_qp_index_offset: char; (* also used for QScb *)
+                second_chroma_qp_index_offset: char; (* also for QScr *)
+                ContinuationFlag: UCHAR;
 
-                    (* remainder for parsing *)
-                    pic_init_qp_minus26: char;
-                    num_ref_idx_l0_active_minus1: UCHAR;
-                    num_ref_idx_l1_active_minus1: UCHAR;
-                    Reserved8BitsA: UCHAR;
+                (* remainder for parsing *)
+                pic_init_qp_minus26: char;
+                num_ref_idx_l0_active_minus1: UCHAR;
+                num_ref_idx_l1_active_minus1: UCHAR;
+                Reserved8BitsA: UCHAR;
 
-                    FrameNumList: array [0 .. 15] of USHORT;
-                    UsedForReferenceFlags: UINT;
-                    NonExistingFrameFlags: USHORT;
-                    frame_num: USHORT;
+                FrameNumList: array [0 .. 15] of USHORT;
+                UsedForReferenceFlags: UINT;
+                NonExistingFrameFlags: USHORT;
+                frame_num: USHORT;
 
-                    log2_max_frame_num_minus4: UCHAR;
-                    pic_order_cnt_type: UCHAR;
-                    log2_max_pic_order_cnt_lsb_minus4: UCHAR;
-                    delta_pic_order_always_zero_flag: UCHAR;
+                log2_max_frame_num_minus4: UCHAR;
+                pic_order_cnt_type: UCHAR;
+                log2_max_pic_order_cnt_lsb_minus4: UCHAR;
+                delta_pic_order_always_zero_flag: UCHAR;
 
-                    direct_8x8_inference_flag: UCHAR;
-                    entropy_coding_mode_flag: UCHAR;
-                    pic_order_present_flag: UCHAR;
-                    num_slice_groups_minus1: UCHAR;
+                direct_8x8_inference_flag: UCHAR;
+                entropy_coding_mode_flag: UCHAR;
+                pic_order_present_flag: UCHAR;
+                num_slice_groups_minus1: UCHAR;
 
-                    slice_group_map_type: UCHAR;
-                    deblocking_filter_control_present_flag: UCHAR;
-                    redundant_pic_cnt_present_flag: UCHAR;
-                    Reserved8BitsB: UCHAR;
+                slice_group_map_type: UCHAR;
+                deblocking_filter_control_present_flag: UCHAR;
+                redundant_pic_cnt_present_flag: UCHAR;
+                Reserved8BitsB: UCHAR;
 
-                    slice_group_change_rate_minus1: USHORT;
-                    (* SliceGroupMap is not needed for MVC, as MVC is for high profile only *)
+                slice_group_change_rate_minus1: USHORT;
+                (* SliceGroupMap is not needed for MVC, as MVC is for high profile only *)
 
-                    (* Following are H.264 MVC Specific parameters *)
-                    num_views_minus1: UCHAR;
-                    view_id: array [0 .. 15] of USHORT;
-                    num_anchor_refs_l0: array [0 .. 15] of UCHAR;
-                    anchor_ref_l0: array [0 .. 15, 0 .. 15] of USHORT;
-                    num_anchor_refs_l1: array [0 .. 15] of UCHAR;
-                    anchor_ref_l1: array [0 .. 15, 0 .. 15] of USHORT;
-                    num_non_anchor_refs_l0: array [0 .. 15] of UCHAR;
-                    non_anchor_ref_l0: array [0 .. 15, 0 .. 15] of USHORT;
-                    num_non_anchor_refs_l1: array [0 .. 15] of UCHAR;
-                    non_anchor_ref_l1: array [0 .. 15, 0 .. 15] of USHORT;
+                (* Following are H.264 MVC Specific parameters *)
+                num_views_minus1: UCHAR;
+                view_id: array [0 .. 15] of USHORT;
+                num_anchor_refs_l0: array [0 .. 15] of UCHAR;
+                anchor_ref_l0: array [0 .. 15, 0 .. 15] of USHORT;
+                num_anchor_refs_l1: array [0 .. 15] of UCHAR;
+                anchor_ref_l1: array [0 .. 15, 0 .. 15] of USHORT;
+                num_non_anchor_refs_l0: array [0 .. 15] of UCHAR;
+                non_anchor_ref_l0: array [0 .. 15, 0 .. 15] of USHORT;
+                num_non_anchor_refs_l1: array [0 .. 15] of UCHAR;
+                non_anchor_ref_l1: array [0 .. 15, 0 .. 15] of USHORT;
 
-                    curr_view_id: USHORT;
-                    anchor_pic_flag: UCHAR;
-                    inter_view_flag: UCHAR;
-                    ViewIDList: array [0 .. 15] of USHORT;
+                curr_view_id: USHORT;
+                anchor_pic_flag: UCHAR;
+                inter_view_flag: UCHAR;
+                ViewIDList: array [0 .. 15] of USHORT;
 
-                );
-            1:
-                (wBitFields: USHORT);
+            );
+            1: (wBitFields: USHORT);
 
     end;
 
@@ -1117,34 +1115,42 @@ type
         TRD: array [0 .. 1] of UINT;
 
         case integer of
-            0:
-                (unPicPostProc: 0 .. 3;
-                    interlaced: 0 .. 1;
-                    quant_type: 0 .. 1;
-                    quarter_sample: 0 .. 1;
-                    resync_marker_disable: 0 .. 1;
-                    data_partitioned: 0 .. 1;
-                    reversible_vlc: 0 .. 1;
-                    reduced_resolution_vop_enable: 0 .. 1;
-                    vop_coded: 0 .. 1;
-                    vop_rounding_type: 0 .. 1;
-                    intra_dc_vlc_thr: 0 .. 7;
-                    top_field_first: 0 .. 1;
-                    alternate_vertical_scan_flag: 0 .. 1;
+            0: (unPicPostProc: 0 .. 3;
+                interlaced: 0 .. 1;
+                quant_type: 0 .. 1;
+                quarter_sample: 0 .. 1;
+                resync_marker_disable: 0 .. 1;
+                data_partitioned: 0 .. 1;
+                reversible_vlc: 0 .. 1;
+                reduced_resolution_vop_enable: 0 .. 1;
+                vop_coded: 0 .. 1;
+                vop_rounding_type: 0 .. 1;
+                intra_dc_vlc_thr: 0 .. 7;
+                top_field_first: 0 .. 1;
+                alternate_vertical_scan_flag: 0 .. 1;
 
-                    profile_and_level_indication: UCHAR;
-                    video_object_layer_verid: UCHAR;
-                    vop_width: word;
-                    vop_height: word;
-                    case integer of 0: (sprite_enable: 0 .. 3; no_of_sprite_warping_points: 0 .. 63; sprite_warping_accuracy: 0 .. 3;
+                profile_and_level_indication: UCHAR;
+                video_object_layer_verid: UCHAR;
+                vop_width: word;
+                vop_height: word;
+                case integer of
+                    0: (sprite_enable: 0 .. 3;
+                    no_of_sprite_warping_points: 0 .. 63;
+                    sprite_warping_accuracy: 0 .. 3;
 
-                        warping_mv: array [0 .. 3, 0 .. 1] of SHORT; case integer of 0: (vop_fcode_forward: 0 .. 7; vop_fcode_backward: 0 .. 7; dummy: 0 .. 3;
-                            StatusReportFeedbackNumber: USHORT; Reserved16BitsA: USHORT; Reserved16BitsB: USHORT; ); 1: (wFcodeBitFields: UCHAR); );
+                    warping_mv: array [0 .. 3, 0 .. 1] of SHORT;
+                    case integer of
+                        0: (vop_fcode_forward: 0 .. 7;
+                        vop_fcode_backward: 0 .. 7;
+                        dummy: 0 .. 3;
+                        StatusReportFeedbackNumber: USHORT;
+                        Reserved16BitsA: USHORT;
+                        Reserved16BitsB: USHORT;);
+                        1: (wFcodeBitFields: UCHAR););
                     1: (wSpriteBitFields: USHORT);
 
-                );
-            1:
-                (wPicFlagBitFields: USHORT);
+            );
+            1: (wPicFlagBitFields: USHORT);
     end;
 
     PDXVA_PicParams_MPEG4_PART2 = ^TDXVA_PicParams_MPEG4_PART2;
@@ -1152,11 +1158,9 @@ type
     (* HEVC Picture Entry structure *)
     TDXVA_PicEntry_HEVC = packed record
         case integer of
-            0:
-                (Index7Bits: 0 .. 127;
-                    AssociatedFlag: 0 .. 1; );
-            1:
-                (bPicEntry: UCHAR);
+            0: (Index7Bits: 0 .. 127;
+                AssociatedFlag: 0 .. 1;);
+            1: (bPicEntry: UCHAR);
 
     end;
 
@@ -1167,62 +1171,101 @@ type
         PicWidthInMinCbsY: USHORT;
         PicHeightInMinCbsY: USHORT;
         case integer of
-            0:
-                (chroma_format_idc: 0 .. 3;
-                    separate_colour_plane_flag: 0 .. 1;
-                    bit_depth_luma_minus8: 0 .. 7;
-                    bit_depth_chroma_minus8: 0 .. 7;
-                    log2_max_pic_order_cnt_lsb_minus4: 0 .. 15;
-                    NoPicReorderingFlag: 0 .. 1;
-                    NoBiPredFlag: 0 .. 1;
-                    ReservedBits1: 0 .. 1;
+            0: (chroma_format_idc: 0 .. 3;
+                separate_colour_plane_flag: 0 .. 1;
+                bit_depth_luma_minus8: 0 .. 7;
+                bit_depth_chroma_minus8: 0 .. 7;
+                log2_max_pic_order_cnt_lsb_minus4: 0 .. 15;
+                NoPicReorderingFlag: 0 .. 1;
+                NoBiPredFlag: 0 .. 1;
+                ReservedBits1: 0 .. 1;
 
-                    CurrPic: TDXVA_PicEntry_HEVC;
-                    sps_max_dec_pic_buffering_minus1: UCHAR;
-                    log2_min_luma_coding_block_size_minus3: UCHAR;
-                    log2_diff_max_min_luma_coding_block_size: UCHAR;
-                    log2_min_transform_block_size_minus2: UCHAR;
-                    log2_diff_max_min_transform_block_size: UCHAR;
-                    max_transform_hierarchy_depth_inter: UCHAR;
-                    max_transform_hierarchy_depth_intra: UCHAR;
-                    num_short_term_ref_pic_sets: UCHAR;
-                    num_long_term_ref_pics_sps: UCHAR;
-                    num_ref_idx_l0_default_active_minus1: UCHAR;
-                    num_ref_idx_l1_default_active_minus1: UCHAR;
-                    init_qp_minus26: char;
-                    ucNumDeltaPocsOfRefRpsIdx: UCHAR;
-                    wNumBitsForShortTermRPSInSlice: USHORT;
-                    ReservedBits2: USHORT;
+                CurrPic: TDXVA_PicEntry_HEVC;
+                sps_max_dec_pic_buffering_minus1: UCHAR;
+                log2_min_luma_coding_block_size_minus3: UCHAR;
+                log2_diff_max_min_luma_coding_block_size: UCHAR;
+                log2_min_transform_block_size_minus2: UCHAR;
+                log2_diff_max_min_transform_block_size: UCHAR;
+                max_transform_hierarchy_depth_inter: UCHAR;
+                max_transform_hierarchy_depth_intra: UCHAR;
+                num_short_term_ref_pic_sets: UCHAR;
+                num_long_term_ref_pics_sps: UCHAR;
+                num_ref_idx_l0_default_active_minus1: UCHAR;
+                num_ref_idx_l1_default_active_minus1: UCHAR;
+                init_qp_minus26: char;
+                ucNumDeltaPocsOfRefRpsIdx: UCHAR;
+                wNumBitsForShortTermRPSInSlice: USHORT;
+                ReservedBits2: USHORT;
 
-                    case integer of 0: (scaling_list_enabled_flag: 0 .. 1; amp_enabled_flag: 0 .. 1; sample_adaptive_offset_enabled_flag: 0 .. 1;
-                        pcm_enabled_flag: 0 .. 1; pcm_sample_bit_depth_luma_minus1: 0 .. 15; pcm_sample_bit_depth_chroma_minus1: 0 .. 15;
-                        log2_min_pcm_luma_coding_block_size_minus3: 0 .. 3; log2_diff_max_min_pcm_luma_coding_block_size: 0 .. 3;
-                        pcm_loop_filter_disabled_flag: 0 .. 1; long_term_ref_pics_present_flag: 0 .. 1; sps_temporal_mvp_enabled_flag: 0 .. 1;
-                        strong_intra_smoothing_enabled_flag: 0 .. 1; dependent_slice_segments_enabled_flag: 0 .. 1; output_flag_present_flag: 0 .. 1;
-                        num_extra_slice_header_bits: 0 .. 7; sign_data_hiding_enabled_flag: 0 .. 1; cabac_init_present_flag: 0 .. 1; ReservedBits3: 0 .. 31;
+                case integer of
+                    0: (scaling_list_enabled_flag: 0 .. 1;
+                    amp_enabled_flag: 0 .. 1;
+                    sample_adaptive_offset_enabled_flag: 0 .. 1;
+                    pcm_enabled_flag: 0 .. 1;
+                    pcm_sample_bit_depth_luma_minus1: 0 .. 15;
+                    pcm_sample_bit_depth_chroma_minus1: 0 .. 15;
+                    log2_min_pcm_luma_coding_block_size_minus3: 0 .. 3;
+                    log2_diff_max_min_pcm_luma_coding_block_size: 0 .. 3;
+                    pcm_loop_filter_disabled_flag: 0 .. 1;
+                    long_term_ref_pics_present_flag: 0 .. 1;
+                    sps_temporal_mvp_enabled_flag: 0 .. 1;
+                    strong_intra_smoothing_enabled_flag: 0 .. 1;
+                    dependent_slice_segments_enabled_flag: 0 .. 1;
+                    output_flag_present_flag: 0 .. 1;
+                    num_extra_slice_header_bits: 0 .. 7;
+                    sign_data_hiding_enabled_flag: 0 .. 1;
+                    cabac_init_present_flag: 0 .. 1;
+                    ReservedBits3: 0 .. 31;
 
-                        case integer of 0: (constrained_intra_pred_flag: 0 .. 1; transform_skip_enabled_flag: 0 .. 1; cu_qp_delta_enabled_flag: 0 .. 1;
-                            pps_slice_chroma_qp_offsets_present_flag: 0 .. 1; weighted_pred_flag: 0 .. 1; weighted_bipred_flag: 0 .. 1;
-                            transquant_bypass_enabled_flag: 0 .. 1; tiles_enabled_flag: 0 .. 1; entropy_coding_sync_enabled_flag: 0 .. 1;
-                            uniform_spacing_flag: 0 .. 1; loop_filter_across_tiles_enabled_flag: 0 .. 1; pps_loop_filter_across_slices_enabled_flag: 0 .. 1;
-                            deblocking_filter_override_enabled_flag: 0 .. 1; pps_deblocking_filter_disabled_flag: 0 .. 1;
-                            lists_modification_present_flag: 0 .. 1; slice_segment_header_extension_present_flag: 0 .. 1; IrapPicFlag: 0 .. 1;
-                            IdrPicFlag: 0 .. 1; IntraPicFlag: 0 .. 1; ReservedBits4: 0 .. 8191;
+                    case integer of
+                        0: (constrained_intra_pred_flag: 0 .. 1;
+                        transform_skip_enabled_flag: 0 .. 1;
+                        cu_qp_delta_enabled_flag: 0 .. 1;
+                        pps_slice_chroma_qp_offsets_present_flag: 0 .. 1;
+                        weighted_pred_flag: 0 .. 1;
+                        weighted_bipred_flag: 0 .. 1;
+                        transquant_bypass_enabled_flag: 0 .. 1;
+                        tiles_enabled_flag: 0 .. 1;
+                        entropy_coding_sync_enabled_flag: 0 .. 1;
+                        uniform_spacing_flag: 0 .. 1;
+                        loop_filter_across_tiles_enabled_flag: 0 .. 1;
+                        pps_loop_filter_across_slices_enabled_flag: 0 .. 1;
+                        deblocking_filter_override_enabled_flag: 0 .. 1;
+                        pps_deblocking_filter_disabled_flag: 0 .. 1;
+                        lists_modification_present_flag: 0 .. 1;
+                        slice_segment_header_extension_present_flag: 0 .. 1;
+                        IrapPicFlag: 0 .. 1;
+                        IdrPicFlag: 0 .. 1;
+                        IntraPicFlag: 0 .. 1;
+                        ReservedBits4: 0 .. 8191;
 
-                            pps_cb_qp_offset: char; pps_cr_qp_offset: char; num_tile_columns_minus1: UCHAR; num_tile_rows_minus1: UCHAR;
-                            column_width_minus1: array [0 .. 18] of USHORT; row_height_minus1: array [0 .. 20] of USHORT; diff_cu_qp_delta_depth: UCHAR;
-                            pps_beta_offset_div2: char; pps_tc_offset_div2: char; log2_parallel_merge_level_minus2: UCHAR; CurrPicOrderCntVal: INT32;
-                            RefPicList: array [0 .. 14] of TDXVA_PicEntry_HEVC; ReservedBits5: UCHAR; PicOrderCntValList: array [0 .. 14] of INT32;
-                            RefPicSetStCurrBefore: array [0 .. 7] of UCHAR; RefPicSetStCurrAfter: array [0 .. 7] of UCHAR;
-                            RefPicSetLtCurr: array [0 .. 7] of UCHAR; ReservedBits6: USHORT; ReservedBits7: USHORT; StatusReportFeedbackNumber: UINT; );
+                        pps_cb_qp_offset: char;
+                        pps_cr_qp_offset: char;
+                        num_tile_columns_minus1: UCHAR;
+                        num_tile_rows_minus1: UCHAR;
+                        column_width_minus1: array [0 .. 18] of USHORT;
+                        row_height_minus1: array [0 .. 20] of USHORT;
+                        diff_cu_qp_delta_depth: UCHAR;
+                        pps_beta_offset_div2: char;
+                        pps_tc_offset_div2: char;
+                        log2_parallel_merge_level_minus2: UCHAR;
+                        CurrPicOrderCntVal: INT32;
+                        RefPicList: array [0 .. 14] of TDXVA_PicEntry_HEVC;
+                        ReservedBits5: UCHAR;
+                        PicOrderCntValList: array [0 .. 14] of INT32;
+                        RefPicSetStCurrBefore: array [0 .. 7] of UCHAR;
+                        RefPicSetStCurrAfter: array [0 .. 7] of UCHAR;
+                        RefPicSetLtCurr: array [0 .. 7] of UCHAR;
+                        ReservedBits6: USHORT;
+                        ReservedBits7: USHORT;
+                        StatusReportFeedbackNumber: UINT;);
                         1: (dwCodingSettingPicturePropertyFlags: UINT32);
 
                     );
                     1: (dwCodingParamToolFlags: UINT32);
 
-                );
-            1:
-                (wFormatAndSequenceInfoFlags: USHORT);
+            );
+            1: (wFormatAndSequenceInfoFlags: USHORT);
 
     end;
 
@@ -1248,6 +1291,198 @@ type
     end;
 
     PDXVA_Slice_HEVC_Short = ^TDXVA_Slice_HEVC_Short;
+
+    (* H.265/HEVC status reporting data structure *)
+    TDXVA_Status_HEVC = record
+        StatusReportFeedbackNumber: USHORT;
+        CurrPic: TDXVA_PicEntry_HEVC;
+        bBufType: UCHAR;
+        bStatus: UCHAR;
+        bReserved8Bits: UCHAR;
+        wNumMbsAffected: USHORT;
+    end;
+    PDXVA_Status_HEVC = ^TDXVA_Status_HEVC;
+
+    (* VPx-specific structures *)
+
+    (* VPx picture entry data structure *)
+    TDXVA_PicEntry_VPx = record
+        case integer of
+            0: (
+                Index7Bits: 0..127;
+                AssociatedFlag: 0.. 1;
+            );
+            1: (bPicEntry: UCHAR);
+    end;
+    PDXVA_PicEntry_VPx = ^TDXVA_PicEntry_VPx;
+
+    (* VP9 segmentation structure *)
+    TDXVA_segmentation_VP9 = record
+        case integer of
+            0: (
+                Enabled: 0.. 1;
+                update_map: 0.. 1;
+                temporal_update: 0.. 1;
+                abs_delta: 0.. 1;
+                ReservedSegmentFlags4Bits: 0..15;
+                tree_probs: array [0..6] of UCHAR;
+                pred_probs: array[0..2] of UCHAR;
+                feature_data: array[0..7, 0..3] of SHORT;
+                feature_mask: array[0..7] of UCHAR;
+            );
+            1: (wSegmentInfoFlags: UCHAR);
+        // end case integer of
+    end;
+
+    (* VP9 picture parameters structure *)
+    TDXVA_PicParams_VP9 = record
+        CurrPic: TDXVA_PicEntry_VPx;
+        profile: UCHAR;
+        case integer of
+            0: (
+                frame_type: 0.. 1;
+                show_frame: 0.. 1;
+                error_resilient_mode: 0.. 1;
+                subsampling_x: 0.. 1;
+                subsampling_y: 0.. 1;
+                extra_plane: 0.. 1;
+                refresh_frame_context: 0.. 1;
+                frame_parallel_decoding_mode: 0.. 1;
+                intra_only: 0.. 1;
+                frame_context_idx: 0..3;
+                reset_frame_context: 0..3;
+                allow_high_precision_mv: 0.. 1;
+                ReservedFormatInfo2Bits: 0..3;
+
+                Width: UINT;
+                Height: UINT;
+                BitDepthMinus8Luma: UCHAR;
+                BitDepthMinus8Chroma: UCHAR;
+                interp_filter: UCHAR;
+                Reserved8Bits: UCHAR;
+                ref_frame_map: array [0..7] of TDXVA_PicEntry_VPx;
+                ref_frame_coded_width: array [0..7] of UINT;
+                ref_frame_coded_height: array [0..7] of UINT;
+                frame_refs: array [0..2] of TDXVA_PicEntry_VPx;
+                ref_frame_sign_bias: array [0..3] of char;
+                filter_level: char;
+                sharpness_level: char;
+                case integer of
+                    0: (
+                    mode_ref_delta_enabled: 0.. 1;
+                    mode_ref_delta_update: 0.. 1;
+                    use_prev_in_find_mv_refs: 0.. 1;
+                    ReservedControlInfo5Bits: 0..31;
+
+                    ref_deltas: array [0..3] of char;
+                    mode_deltas: array [0..1] of char;
+                    base_qindex: SHORT;
+                    y_dc_delta_q: char;
+                    uv_dc_delta_q: char;
+                    uv_ac_delta_q: char;
+                    stVP9Segments: TDXVA_segmentation_VP9;
+                    log2_tile_cols: UCHAR;
+                    log2_tile_rows: UCHAR;
+                    uncompressed_header_size_byte_aligned: USHORT;
+                    first_partition_size: USHORT;
+                    Reserved16Bits: USHORT;
+                    Reserved32Bits: UINT;
+                    StatusReportFeedbackNumber: UINT;
+                    );
+                    1: (wControlInfoFlags: UCHAR);
+            );
+            1: (wFormatAndPictureInfoFlags: USHORT);
+        //;
+    end;
+    PDXVA_PicParams_VP9 = ^TDXVA_PicParams_VP9;
+
+    (* VP8 segmentation structure *)
+    TDXVA_segmentation_VP8 = record
+        case integer of
+            0: (
+                segmentation_enabled: 0.. 1;
+                update_mb_segmentation_map: 0.. 1;
+                update_mb_segmentation_data: 0.. 1;
+                mb_segement_abs_delta: 0.. 1;
+                ReservedSegmentFlags4Bits: 0..15;
+                segment_feature_data: array [0..1, 0..3] of char;
+                mb_segment_tree_probs: array [0..2] of UCHAR;
+            );
+            1: (wSegmentFlags: UCHAR);
+    end;
+
+    (* VP8 picture parameters structure *)
+    TDXVA_PicParams_VP8 = record
+        first_part_size: UINT;
+        Width: UINT;
+        Height: UINT;
+        CurrPic: TDXVA_PicEntry_VPx;
+        case integer of
+            0: (
+                frame_type: 0.. 1;
+                version: 0..7;
+                show_frame: 0.. 1;
+                clamp_type: 0.. 1;
+                ReservedFrameTag3Bits: 0..3;
+                stVP8Segments: TDXVA_segmentation_VP8;
+                filter_type: UCHAR;
+                filter_level: UCHAR;
+                sharpness_level: UCHAR;
+                mode_ref_lf_delta_enabled: UCHAR;
+                mode_ref_lf_delta_update: UCHAR;
+                ref_lf_deltas: array [0..3] of char;
+                mode_lf_deltas: array [0..3] of char;
+                log2_nbr_of_dct_partitions: UCHAR;
+                base_qindex: UCHAR;
+                y1dc_delta_q: char;
+                y2dc_delta_q: char;
+                y2ac_delta_q: char;
+                uvdc_delta_q: char;
+                uvac_delta_q: char;
+                alt_fb_idx: TDXVA_PicEntry_VPx;
+                gld_fb_idx: TDXVA_PicEntry_VPx;
+                lst_fb_idx: TDXVA_PicEntry_VPx;
+                ref_frame_sign_bias_golden: UCHAR;
+                ref_frame_sign_bias_altref: UCHAR;
+                refresh_entropy_probs: UCHAR;
+                vp8_coef_update_probs: array [0..3, 0..7, 0..2, 0..10] of UCHAR;
+                mb_no_coeff_skip: UCHAR;
+                prob_skip_false: UCHAR;
+                prob_intra: UCHAR;
+                prob_last: UCHAR;
+                prob_golden: UCHAR;
+                intra_16x16_prob: array [0..3] of UCHAR;
+                intra_chroma_prob: array [0..2] of UCHAR;
+                vp8_mv_update_probs: array [0..1, 0..18] of UCHAR;
+                ReservedBits1: USHORT;
+                ReservedBits2: USHORT;
+                ReservedBits3: USHORT;
+                StatusReportFeedbackNumber: UINT;
+            );
+            1: (wFrameTagFlags: UCHAR);
+    end;
+    PDXVA_PicParams_VP8 = ^TDXVA_PicParams_VP8;
+
+
+    (* VPx slice control data structure - short form *)
+    TDXVA_Slice_VPx_Short = record
+        BSNALunitDataLocation: UINT;
+        SliceBytesInBuffer: UINT;
+        wBadSliceChopping: USHORT;
+    end;
+    PDXVA_Slice_VPx_Short = ^TDXVA_Slice_VPx_Short;
+
+    (* VPx status reporting data structure *)
+    TDXVA_Status_VPx = record
+        StatusReportFeedbackNumber: UINT;
+        CurrPic: TDXVA_PicEntry_VPx;
+        bBufType: UCHAR;
+        bStatus: UCHAR;
+        bReserved8Bits: UCHAR;
+        wNumMbsAffected: USHORT;
+    end;
+    PDXVA_Status_VPx = ^TDXVA_Status_VPx;
+
 {$Z4}
 {$A4}
     // pragma pack(pop, BeforeDXVApacking)
@@ -1272,7 +1507,8 @@ type
     TDXVA_VideoTransferFunction = (DXVA_VideoTransFuncShift = DXVA_ExtColorData_ShiftBase + 19,
         DXVA_VideoTransFuncMask = (($FFFFFFFF shl 5) xor $FFFFFFFF) shl Ord(DXVA_VideoTransFuncShift),
 
-        DXVA_VideoTransFunc_Unknown = 0, DXVA_VideoTransFunc_10 = 1, DXVA_VideoTransFunc_18 = 2, DXVA_VideoTransFunc_20 = 3, DXVA_VideoTransFunc_22 = 4,
+        DXVA_VideoTransFunc_Unknown = 0, DXVA_VideoTransFunc_10 = 1, DXVA_VideoTransFunc_18 = 2, DXVA_VideoTransFunc_20 =
+        3, DXVA_VideoTransFunc_22 = 4,
         DXVA_VideoTransFunc_22_709 = 5, DXVA_VideoTransFunc_22_240M = 6, DXVA_VideoTransFunc_22_8bit_sRGB = 7, DXVA_VideoTransFunc_28 = 8);
 
     TDXVA_VideoPrimaries = (DXVA_VideoPrimariesShift = (DXVA_ExtColorData_ShiftBase + 14),
@@ -1285,13 +1521,15 @@ type
     TDXVA_VideoLighting = (DXVA_VideoLightingShift = (DXVA_ExtColorData_ShiftBase + 10),
         DXVA_VideoLightingMask = (($FFFFFFFF shl 4) xor $FFFFFFFF) shl Ord(DXVA_VideoLightingShift), // DXVAColorMask(4, DXVA_VideoLightingShift),
 
-        DXVA_VideoLighting_Unknown = 0, DXVA_VideoLighting_bright = 1, DXVA_VideoLighting_office = 2, DXVA_VideoLighting_dim = 3, DXVA_VideoLighting_dark = 4);
+        DXVA_VideoLighting_Unknown = 0, DXVA_VideoLighting_bright = 1, DXVA_VideoLighting_office = 2, DXVA_VideoLighting_dim =
+        3, DXVA_VideoLighting_dark = 4);
 
     TDXVA_VideoTransferMatrix = (DXVA_VideoTransferMatrixShift = (DXVA_ExtColorData_ShiftBase + 7),
         DXVA_VideoTransferMatrixMask = (($FFFFFFFF shl 3) xor $FFFFFFFF) shl Ord(DXVA_VideoTransferMatrixShift),
         // DXVAColorMask(3, DXVA_VideoTransferMatrixShift),
 
-        DXVA_VideoTransferMatrix_Unknown = 0, DXVA_VideoTransferMatrix_BT709 = 1, DXVA_VideoTransferMatrix_BT601 = 2, DXVA_VideoTransferMatrix_SMPTE240M = 3);
+        DXVA_VideoTransferMatrix_Unknown = 0, DXVA_VideoTransferMatrix_BT709 = 1, DXVA_VideoTransferMatrix_BT601 =
+        2, DXVA_VideoTransferMatrix_SMPTE240M = 3);
 
     TDXVA_NominalRange = (DXVA_NominalRangeShift = (DXVA_ExtColorData_ShiftBase + 4),
         DXVA_NominalRangeMask = (($FFFFFFFF shl 3) xor $FFFFFFFF) shl Ord(DXVA_NominalRangeShift), // DXVAColorMask(3, DXVA_NominalRangeShift),
@@ -1304,19 +1542,21 @@ type
         DXVA_VideoChromaSubsamplingMask = (($FFFFFFFF shl 4) xor $FFFFFFFF) shl Ord(DXVA_VideoChromaSubsamplingShift),
         // DXVAColorMask(4, DXVA_VideoChromaSubsamplingShift),
 
-        DXVA_VideoChromaSubsampling_Unknown = 0, DXVA_VideoChromaSubsampling_ProgressiveChroma = $8, DXVA_VideoChromaSubsampling_Horizontally_Cosited = $4,
+        DXVA_VideoChromaSubsampling_Unknown = 0, DXVA_VideoChromaSubsampling_ProgressiveChroma = $8,
+        DXVA_VideoChromaSubsampling_Horizontally_Cosited = $4,
         DXVA_VideoChromaSubsampling_Vertically_Cosited = $2, DXVA_VideoChromaSubsampling_Vertically_AlignedChromaPlanes = $1,
 
         // 4:2:0 variations
-        DXVA_VideoChromaSubsampling_MPEG2 = Ord(DXVA_VideoChromaSubsampling_Horizontally_Cosited) or Ord
-          (DXVA_VideoChromaSubsampling_Vertically_AlignedChromaPlanes),
+        DXVA_VideoChromaSubsampling_MPEG2 = Ord(DXVA_VideoChromaSubsampling_Horizontally_Cosited) or
+        Ord(DXVA_VideoChromaSubsampling_Vertically_AlignedChromaPlanes),
 
         DXVA_VideoChromaSubsampling_MPEG1 = DXVA_VideoChromaSubsampling_Vertically_AlignedChromaPlanes,
 
-        DXVA_VideoChromaSubsampling_DV_PAL = Ord(DXVA_VideoChromaSubsampling_Horizontally_Cosited) or Ord(DXVA_VideoChromaSubsampling_Vertically_Cosited),
+        DXVA_VideoChromaSubsampling_DV_PAL = Ord(DXVA_VideoChromaSubsampling_Horizontally_Cosited) or
+        Ord(DXVA_VideoChromaSubsampling_Vertically_Cosited),
         // 4:4:4, 4:2:2, 4:1:1
-        DXVA_VideoChromaSubsampling_Cosited = Ord(DXVA_VideoChromaSubsampling_Horizontally_Cosited) or Ord(DXVA_VideoChromaSubsampling_Vertically_Cosited)
-          or Ord(DXVA_VideoChromaSubsampling_Vertically_AlignedChromaPlanes));
+        DXVA_VideoChromaSubsampling_Cosited = Ord(DXVA_VideoChromaSubsampling_Horizontally_Cosited) or
+        Ord(DXVA_VideoChromaSubsampling_Vertically_Cosited) or Ord(DXVA_VideoChromaSubsampling_Vertically_AlignedChromaPlanes));
 
     TDXVA_ExtendedFormat = { bitpacked } record
         SampleFormat: 0 .. 255; // See DXVA_SampleFormat
@@ -1344,7 +1584,15 @@ type
     // data structures shared by User mode and Kernel mode.
     // -------------------------------------------------------------------------
 
-    TD3DFORMAT = DWORD;
+    TD3DFORMAT = (
+        D3DPOOL_DEFAULT = 0,
+        D3DPOOL_MANAGED = 1,
+        D3DPOOL_SYSTEMMEM = 2,
+        D3DPOOL_SCRATCH = 3,
+        D3DPOOL_LOCALVIDMEM = 4,
+        D3DPOOL_NONLOCALVIDMEM = 5,
+        D3DPOOL_FORCE_DWORD = $7fffffff);
+
     PD3DFORMAT = ^TD3DFORMAT;
     TD3DPOOL = DWORD;
 
@@ -1428,13 +1676,12 @@ type
     // -------------------------------------------------------------------------
 
     TDXVA_SampleFlags = (DXVA_SampleFlagsMask = (1 shl 3) or (1 shl 2) or (1 shl 1) or (1 shl 0),
-
         DXVA_SampleFlag_Palette_Changed = $0001, DXVA_SampleFlag_SrcRect_Changed = $0002, DXVA_SampleFlag_DstRect_Changed = $0004,
         DXVA_SampleFlag_ColorData_Changed = $0008);
 
     TDXVA_DestinationFlags = (DXVA_DestinationFlagMask = (1 shl 3) or (1 shl 2) or (1 shl 1) or (1 shl 0),
-
-        DXVA_DestinationFlag_Background_Changed = $0001, DXVA_DestinationFlag_TargetRect_Changed = $0002, DXVA_DestinationFlag_ColorData_Changed = $0004,
+        DXVA_DestinationFlag_Background_Changed = $0001, DXVA_DestinationFlag_TargetRect_Changed = $0002,
+        DXVA_DestinationFlag_ColorData_Changed = $0004,
         DXVA_DestinationFlag_Alpha_Changed = $0008);
 
     TDXVA_VideoSample2 = record
@@ -1639,19 +1886,23 @@ type
         ExtendedInfoData: ULONG;
     end;
 
-    TCOPP_DPCP_Protection_Level = (COPP_DPCP_Level0 = 0, COPP_DPCP_LevelMin = COPP_DPCP_Level0, COPP_DPCP_Level1 = 1, COPP_DPCP_LevelMax = COPP_DPCP_Level1,
+    TCOPP_DPCP_Protection_Level = (COPP_DPCP_Level0 = 0, COPP_DPCP_LevelMin = COPP_DPCP_Level0, COPP_DPCP_Level1 =
+        1, COPP_DPCP_LevelMax = COPP_DPCP_Level1,
         COPP_DPCP_ForceDWORD = $7FFFFFFF);
 
     // Set the HDCP protection level - (0 - 1 DWORD, 4 bytes)
 
-    TCOPP_HDCP_Protection_Level = (COPP_HDCP_Level0 = 0, COPP_HDCP_LevelMin = COPP_HDCP_Level0, COPP_HDCP_Level1 = 1, COPP_HDCP_LevelMax = COPP_HDCP_Level1,
+    TCOPP_HDCP_Protection_Level = (COPP_HDCP_Level0 = 0, COPP_HDCP_LevelMin = COPP_HDCP_Level0, COPP_HDCP_Level1 =
+        1, COPP_HDCP_LevelMax = COPP_HDCP_Level1,
         COPP_HDCP_ForceDWORD = $7FFFFFFF);
 
-    TCOPP_CGMSA_Protection_Level = (COPP_CGMSA_Disabled = 0, COPP_CGMSA_LevelMin = COPP_CGMSA_Disabled, COPP_CGMSA_CopyFreely = 1, COPP_CGMSA_CopyNoMore = 2,
+    TCOPP_CGMSA_Protection_Level = (COPP_CGMSA_Disabled = 0, COPP_CGMSA_LevelMin = COPP_CGMSA_Disabled, COPP_CGMSA_CopyFreely =
+        1, COPP_CGMSA_CopyNoMore = 2,
         COPP_CGMSA_CopyOneGeneration = 3, COPP_CGMSA_CopyNever = 4, COPP_CGMSA_RedistributionControlRequired = $08,
         COPP_CGMSA_LevelMax = (COPP_CGMSA_RedistributionControlRequired + COPP_CGMSA_CopyNever), COPP_CGMSA_ForceDWORD = $7FFFFFFF);
 
-    TCOPP_ACP_Protection_Level = (COPP_ACP_Level0 = 0, COPP_ACP_LevelMin = COPP_ACP_Level0, COPP_ACP_Level1 = 1, COPP_ACP_Level2 = 2, COPP_ACP_Level3 = 3,
+    TCOPP_ACP_Protection_Level = (COPP_ACP_Level0 = 0, COPP_ACP_LevelMin = COPP_ACP_Level0, COPP_ACP_Level1 = 1,
+        COPP_ACP_Level2 = 2, COPP_ACP_Level3 = 3,
         COPP_ACP_LevelMax = COPP_ACP_Level3, COPP_ACP_ForceDWORD = $7FFFFFFF);
 
     TDXVA_COPPSetSignalingCmdData = record
@@ -1670,12 +1921,14 @@ type
     // Add format enum and data enum
     TCOPP_TVProtectionStandard = (COPP_ProtectionStandard_Unknown = $80000000, COPP_ProtectionStandard_None = $00000000,
         COPP_ProtectionStandard_IEC61880_525i = $00000001, COPP_ProtectionStandard_IEC61880_2_525i = $00000002,
-        COPP_ProtectionStandard_IEC62375_625p = $00000004, COPP_ProtectionStandard_EIA608B_525 = $00000008, COPP_ProtectionStandard_EN300294_625i = $00000010,
+        COPP_ProtectionStandard_IEC62375_625p = $00000004, COPP_ProtectionStandard_EIA608B_525 = $00000008,
+        COPP_ProtectionStandard_EN300294_625i = $00000010,
         COPP_ProtectionStandard_CEA805A_TypeA_525p = $00000020, COPP_ProtectionStandard_CEA805A_TypeA_750p = $00000040,
         COPP_ProtectionStandard_CEA805A_TypeA_1125i = $00000080, COPP_ProtectionStandard_CEA805A_TypeB_525p = $00000100,
         COPP_ProtectionStandard_CEA805A_TypeB_750p = $00000200, COPP_ProtectionStandard_CEA805A_TypeB_1125i = $00000400,
         COPP_ProtectionStandard_ARIBTRB15_525i = $00000800, COPP_ProtectionStandard_ARIBTRB15_525p = $00001000,
-        COPP_ProtectionStandard_ARIBTRB15_750p = $00002000, COPP_ProtectionStandard_ARIBTRB15_1125i = $00004000, COPP_ProtectionStandard_Mask = $80007FFF,
+        COPP_ProtectionStandard_ARIBTRB15_750p = $00002000, COPP_ProtectionStandard_ARIBTRB15_1125i = $00004000,
+        COPP_ProtectionStandard_Mask = $80007FFF,
         COPP_ProtectionStandard_Reserved = $7FFF8000);
 
     TCOPP_ImageAspectRatio_EN300294 = (COPP_AspectRatio_EN300294_FullFormat4by3 = 0, COPP_AspectRatio_EN300294_Box14by9Center = 1,
@@ -1736,17 +1989,18 @@ type
         Reserved2: TGUID;
     end;
 
-    TCOPP_ConnectorType = (COPP_ConnectorType_Unknown = -1, COPP_ConnectorType_VGA = 0, COPP_ConnectorType_SVideo = 1, COPP_ConnectorType_CompositeVideo = 2,
+    TCOPP_ConnectorType = (COPP_ConnectorType_Unknown = -1, COPP_ConnectorType_VGA = 0, COPP_ConnectorType_SVideo =
+        1, COPP_ConnectorType_CompositeVideo = 2,
         COPP_ConnectorType_ComponentVideo = 3, COPP_ConnectorType_DVI = 4, COPP_ConnectorType_HDMI = 5, COPP_ConnectorType_LVDS = 6,
         COPP_ConnectorType_TMDS = 7, COPP_ConnectorType_D_JPN = 8, COPP_ConnectorType_SDI = 9, COPP_ConnectorType_DisplayPortExternal = 10,
         COPP_ConnectorType_DisplayPortEmbedded = 11, COPP_ConnectorType_UDIExternal = 12, COPP_ConnectorType_UDIEmbedded = 13,
         COPP_ConnectorType_Internal = $80000000, // can be combined with the other connector types
         COPP_ConnectorType_ForceDWORD = $7FFFFFFF (* force 32-bit size enum *)
-    );
+        );
 
     TCOPP_BusType = (COPP_BusType_Unknown = 0, COPP_BusType_PCI = 1, COPP_BusType_PCIX = 2, COPP_BusType_PCIExpress = 3, COPP_BusType_AGP = 4,
         COPP_BusType_Integrated = $80000000, // can be combined with the other bus types
-        COPP_BusType_ForceDWORD = $7FFFFFFF (* force 32-bit size enum *) );
+        COPP_BusType_ForceDWORD = $7FFFFFFF (* force 32-bit size enum *));
 
     TDXVA_COPPStatusSignalingCmdData = record
         rApp: TGUID;
@@ -1795,28 +2049,39 @@ type
 
     IDirect3DVideoDevice9 = interface(IUnknown)
         ['{694036ac-542a-4a3a-9a32-53bc20002c1b}']
-        function CreateSurface(Width: UINT; Height: UINT; BackBuffers: UINT; Format: TD3DFORMAT; Pool: TD3DPOOL; Usage: DWORD;
-            out ppSurface: IDirect3DSurface9; out pSharedHandle: THANDLE): HResult; stdcall;
-        function GetDXVACompressedBufferInfo(const pGuid: TGUID; const pUncompData: TDXVAUncompDataInfo; var pNumBuffers: DWORD;
-            var pBufferInfo: PDXVACompBufferInfo): HResult; stdcall;
-        function GetDXVAGuids(var pNumGuids: DWORD; var pGuids: pGuid): HResult; stdcall;
+        function CreateSurface(Width: UINT; Height: UINT; BackBuffers: UINT; Format: TD3DFORMAT; Pool: TD3DPOOL;
+            Usage: DWORD; out ppSurface: IDirect3DSurface9; out pSharedHandle: THANDLE): HResult; stdcall;
+        function GetDXVACompressedBufferInfo(const pGuid: TGUID; const pUncompData: TDXVAUncompDataInfo;
+            var pNumBuffers: DWORD; var pBufferInfo: PDXVACompBufferInfo): HResult; stdcall;
+        function GetDXVAGuids(var pNumGuids: DWORD; var pGuids: PGuid): HResult; stdcall;
         function GetDXVAInternalInfo(const pGuid: TGUID; const pUncompData: TDXVAUncompDataInfo; out pMemoryUsed: DWORD): HResult; stdcall;
         function GetUncompressedDXVAFormats(const pGuid: TGUID; var pNumFormats: DWORD; var pFormats: PD3DFORMAT): HResult; stdcall;
-        function CreateDXVADevice(const pGuid: TGUID; const pUncompData: TDXVAUncompDataInfo; pData: pointer; DataSize: DWORD;
-            out ppDXVADevice: IDirect3DDXVADevice9): HResult; stdcall;
+        function CreateDXVADevice(const pGuid: TGUID; const pUncompData: TDXVAUncompDataInfo; pData: pointer;
+            DataSize: DWORD; out ppDXVADevice: IDirect3DDXVADevice9): HResult; stdcall;
     end;
 
     IDirect3DDXVADevice9 = interface(IUnknown)
         ['{9f00c3d3-5ab6-465f-b955-9f0ebb2c5606}']
-        function BeginFrame(pDstSurface: IDirect3DSurface9; SizeInputData: DWORD; pInputData: pointer; out pSizeOutputData: DWORD;
-            out pOutputData: pointer): HResult; stdcall;
+        function BeginFrame(pDstSurface: IDirect3DSurface9; SizeInputData: DWORD; pInputData: pointer;
+            out pSizeOutputData: DWORD; out pOutputData: pointer): HResult; stdcall;
         function EndFrame(SizeMiscData: DWORD; pMiscData: pointer): HResult; stdcall;
-        function Execute(FunctionNum: DWORD; pInputData: pointer; InputSize: DWORD; OuputData: pointer; OutputSize: DWORD; NumBuffers: DWORD;
-            pBufferInfo: PDXVABufferInfo): HResult; stdcall;
+        function Execute(FunctionNum: DWORD; pInputData: pointer; InputSize: DWORD; OuputData: pointer; OutputSize: DWORD;
+            NumBuffers: DWORD; pBufferInfo: PDXVABufferInfo): HResult; stdcall;
         function QueryStatus(pSurface: IDirect3DSurface9; Flags: DWORD): HResult; stdcall;
     end;
 
-    { Helper functions }
+    {$A16}
+    PDXVA_MBctrl_I_HostResidDiff_1 = ^TDXVA_MBctrl_I_HostResidDiff_1;
+    PDXVA_MBctrl_I_OffHostIDCT_1 = ^TDXVA_MBctrl_I_OffHostIDCT_1;
+    PDXVA_MBctrl_P_HostResidDiff_1 = ^TDXVA_MBctrl_P_HostResidDiff_1;
+    PDXVA_MBctrl_P_OffHostIDCT_1 = ^TDXVA_MBctrl_P_OffHostIDCT_1;
+
+    {$A4}
+
+{ Helper functions }
+
+function DXVA_ExtractSampleFormat(sf: integer):TDXVA_SampleFormat;
+function DXVA_ExtractExtColorData(sf: integer; Mask: integer; Shift: integer):integer;
 
 function readDXVA_QueryOrReplyFuncFlag(ptr: DWORD): DWORD;
 function readDXVA_QueryOrReplyFuncFlag_ACCEL(ptr: DWORD): DWORD;
@@ -1836,109 +2101,154 @@ function setDXVA_EncryptProtocolFuncFunc(var ptr: DWORD; fnc: DWORD): DWORD;
 
 implementation
 
+
+function DXVA_ExtractSampleFormat(sf: integer): TDXVA_SampleFormat;
+begin
+   result := TDXVA_SampleFormat(sf and ord(DXVA_SampleFormatMask));
+end;
+
+function DXVA_ExtractExtColorData(sf: integer; Mask: integer; Shift: integer):integer;
+begin
+     result:=(sf and Mask) shr Shift;
+end;
+
 function readDXVA_QueryOrReplyFuncFlag(ptr: DWORD): DWORD;
 begin
-    result := (ptr shr 8);
+    Result := (ptr shr 8);
 end;
+
+
 
 function readDXVA_QueryOrReplyFuncFlag_ACCEL(ptr: DWORD): DWORD;
 begin
-    result := (ptr shr 11) AND 1;
+    Result := (ptr shr 11) and 1;
 end;
+
+
 
 function readDXVA_QueryOrReplyFuncFlag_LOCK(ptr: DWORD): DWORD;
 begin
-    result := (ptr shr 10) AND 1;
+    Result := (ptr shr 10) and 1;
 end;
+
+
 
 function readDXVA_QueryOrReplyFuncFlag_BAD(ptr: DWORD): DWORD;
 begin
-    result := (ptr shr 9) AND 1;
+    Result := (ptr shr 9) and 1;
 end;
+
+
 
 function readDXVA_QueryOrReplyFuncFlag_PLUS(ptr: DWORD): DWORD;
 begin
-    result := (ptr shr 8) AND 1;
+    Result := (ptr shr 8) and 1;
 end;
+
+
 
 function readDXVA_QueryOrReplyFuncFunc(ptr: DWORD): DWORD;
 begin
-    result := (ptr AND $FF);
+    Result := (ptr and $FF);
 end;
+
+
 
 function writeDXVA_QueryOrReplyFunc(out ptr: DWORD; flg, fnc: DWORD): DWORD;
 begin
-    result := ((flg shl 8) or fnc);
-    ptr := result;
+    Result := ((flg shl 8) or fnc);
+    ptr := Result;
 end;
+
+
 
 function setDXVA_QueryOrReplyFuncFlag(var ptr: DWORD; flg: DWORD): DWORD;
 begin
     ptr := ptr or (flg shl 8);
 end;
 
+
+
 function setDXVA_QueryOrReplyFuncFunc(var ptr: DWORD; fnc: DWORD): DWORD;
 begin
     ptr := ptr or fnc;
 end;
 
+
+
 function readDXVA_EncryptProtocolFuncFlag(ptr: DWORD): DWORD;
 begin
-    result := ptr shr 8;
+    Result := ptr shr 8;
 end;
+
+
 
 function readDXVA_EncryptProtocolFuncFlag_ACCEL(ptr: DWORD): DWORD;
 begin
-    result := (ptr shr 11) and 1;
+    Result := (ptr shr 11) and 1;
 end;
+
+
 
 function readDXVA_EncryptProtocolFuncFunc(ptr: DWORD): DWORD;
 begin
-    result := (ptr AND $FF);
+    Result := (ptr and $FF);
 end;
+
+
 
 function writeDXVA_EncryptProtocolFunc(out ptr: DWORD; flg, fnc: DWORD): DWORD;
 begin
     ptr := (flg shl 8) or fnc;
-    result := ptr;
+    Result := ptr;
 end;
+
+
 
 function setDXVA_EncryptProtocolFuncFlag(var ptr: DWORD; flg: DWORD): DWORD;
 begin
     ptr := ptr or (flg shl 8);
-    result := ptr;
+    Result := ptr;
 end;
+
+
 
 function setDXVA_EncryptProtocolFuncFunc(var ptr: DWORD; fnc: DWORD): DWORD;
 begin
     ptr := ptr or fnc;
-    result := ptr;
+    Result := ptr;
 end;
 
 (* Macros for Reading EOB and Index Values *)
 
 function readDXVA_TCoefSingleIDX(ptr: TDXVA_TCoefSingle): DWORD;
 begin
-    result := ptr.wIndexWithEOB shr 1;
+    Result := ptr.wIndexWithEOB shr 1;
 
 end;
 
+
+
 function readDXVA_TCoefSingleEOB(ptr: TDXVA_TCoefSingle): DWORD;
 begin
-    result := ptr.wIndexWithEOB AND 1;
+    Result := ptr.wIndexWithEOB and 1;
 end;
 
 (* Macro for Writing EOB and Index Values *)
 
 procedure writeDXVA_TCoefSingleIndexWithEOB(var ptr: TDXVA_TCoefSingle; idx, eob: DWORD);
 begin
-    ptr.wIndexWithEOB := ((idx shl 1) or eob)
+    ptr.wIndexWithEOB := ((idx shl 1) or eob);
 end;
+
+
 
 procedure setDXVA_TCoefSingleIDX(var ptr: TDXVA_TCoefSingle; idx: DWORD);
 begin
     ptr.wIndexWithEOB := ptr.wIndexWithEOB or (idx shl 1);
 end;
+
+
 
 procedure setDXVA_TCoefSingleEOB(var ptr: TDXVA_TCoefSingle);
 begin
@@ -1949,12 +2259,14 @@ end;
 
 function readDXVA_EdgeFilterStrength(ptr: DWORD): DWORD;
 begin
-    result := ptr shr 1;
+    Result := ptr shr 1;
 end;
+
+
 
 function readDXVA_EdgeFilterOn(ptr: DWORD): DWORD;
 begin
-    result := ptr and 1;
+    Result := ptr and 1;
 end;
 
 (* Macro for Writing STRENGTH and FilterOn *)
@@ -1964,35 +2276,49 @@ begin
     ptr := (str shl 1) or fon;
 end;
 
+
+
 procedure setDXVA_EdgeFilterStrength(var ptr: DWORD; str: DWORD);
 begin
     ptr := ptr or (str shl 1);
 end;
+
+
 
 procedure setDXVA_EdgeFilterOn(var ptr: DWORD);
 begin
     ptr := ptr or 1;
 end;
 
+
+
 function readDXVA_IA44index(ptr: DWORD): DWORD;
 begin
-    result := (ptr AND $F0) shr 4;
+    Result := (ptr and $F0) shr 4;
 end;
+
+
 
 function readDXVA_IA44alpha(ptr: DWORD): DWORD;
 begin
-    result := ptr and $0F;
+    Result := ptr and $0F;
 end;
+
+
 
 procedure writeDXVA_IA44(out ptr: DWORD; idx, Alpha: DWORD);
 begin
     ptr := (idx shl 4) or Alpha;
 end;
 
+
+
 procedure setDXVA_IA44index(var ptr: DWORD; idx: DWORD);
 begin
     ptr := ptr or (idx shr 4);
 end;
+
+
 
 procedure setDXVA_IA44alpha(var ptr: DWORD; Alpha: DWORD);
 begin
@@ -2003,24 +2329,32 @@ end;
 
 function readDXVA_AI44index(ptr: DWORD): DWORD;
 begin
-    result := ptr AND $0F;
+    Result := ptr and $0F;
 
 end;
+
+
 
 function readDXVA_AI44alpha(ptr: DWORD): DWORD;
 begin
-    result := (ptr and $F0) shr 4;
+    Result := (ptr and $F0) shr 4;
 end;
+
+
 
 procedure writeDXVA_AI44(out ptr: DWORD; idx, Alpha: DWORD);
 begin
     ptr := (Alpha shl 4) or idx;
 end;
 
+
+
 procedure setDXVA_AI44index(var ptr: DWORD; idx: DWORD);
 begin
     ptr := ptr or idx;
 end;
+
+
 
 procedure setDXVA_AI44alpha(var ptr: DWORD; Alpha: DWORD);
 begin

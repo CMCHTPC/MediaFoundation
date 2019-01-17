@@ -1,8 +1,12 @@
-unit CMC.DXVA2API;
+unit Win32.DXVA2API;
 
+// Checked and Updated to SDK 10.0.17763.0
+// (c) Translation to Pascal by Norbert Sonnleitner
 {$IFDEF FPC}
 {$mode delphi}
 {$ENDIF}
+
+
 
 interface
 
@@ -63,6 +67,9 @@ const
     DXVA2_ModeHEVC_VLD_Main: TGUID = '{5b11d51b-2f4c-4452-bcc3-09f2a1160cc0}';
     DXVA2_ModeHEVC_VLD_Main10: TGUID = '{107af0e0-ef1a-4d19-aba8-67a163073d13}';
 
+    DXVA2_ModeVP9_VLD_Profile0: TGUID = '{463707f8-a1d0-4585-876d-83aa6d60b89e}';
+    DXVA2_ModeVP9_VLD_10bit_Profile2: TGUID = '{a4c749ef-6ecf-48aa-8448-50a7a1165ff7}';
+    DXVA2_ModeVP8_VLD: TGUID = '{90b899ea-3a62-4705-88b3-8df04b2744e7}';
 
 const
     IID_IDirect3DDeviceManager9: TGUID = '{a0cade0f-06d5-4cf4-a1c7-f3cdd725aa75}';
@@ -204,10 +211,10 @@ type
     //   The following declarations within the 'if 0' block are dummy typedefs used to make
     //   the evr.idl file build. The actual definitions are contained in d3d9.h
 
-{    IDirect3DDevice9 = DWORD;   }
+    {    IDirect3DDevice9 = DWORD;   }
     PIDirect3DDevice9 = ^IDirect3DDevice9;
 
-{    IDirect3DSurface9 = DWORD;    }
+    {    IDirect3DSurface9 = DWORD;    }
     PIDirect3DSurface9 = ^IDirect3DSurface9;
 
     TD3DFORMAT = DWORD;
@@ -232,9 +239,9 @@ type
             1: (Value: UINT);
     end;
     {$ELSE}
-     TDXVA2_ExtendedFormat =  record
-          Value: UINT;
-     end;
+    TDXVA2_ExtendedFormat = record
+        Value: UINT;
+    end;
     {$ENDIF}
 
 
@@ -358,7 +365,7 @@ type
             0: (Fraction: USHORT;
                 Value: SHORT
             );
-            1: (ll: LONGINT);
+            1: (ll: longint);
     end;
 
     PDXVA2_Fixed32 = ^TDXVA2_Fixed32;
@@ -517,21 +524,21 @@ type
 
     IDirectXVideoDecoderService = interface(IDirectXVideoAccelerationService)
         ['{fc51a551-d5e7-11d9-af55-00054e43ff02}']
-        function GetDecoderDeviceGuids(out pCount: UINT; out pGuids: PGUID): HResult; stdcall;
-        function GetDecoderRenderTargets(const Guid: TGUID; out pCount: UINT; out pFormats: PD3DFORMAT): HResult; stdcall;
+        function GetDecoderDeviceGuids(out pCount: UINT; out pGuids {arraysize pCount}: PGUID): HResult; stdcall;
+        function GetDecoderRenderTargets(const Guid: TGUID; out pCount: UINT; out pFormats {arraysize pCount}: PD3DFORMAT): HResult; stdcall;
         function GetDecoderConfigurations(const Guid: TGUID; const pVideoDesc: TDXVA2_VideoDesc; pReserved: Pointer;
-            out pCount: UINT; out ppConfigs: PDXVA2_ConfigPictureDecode): HResult; stdcall;
+            out pCount: UINT; out ppConfigs{arraysize pCount}: PDXVA2_ConfigPictureDecode): HResult; stdcall;
         function CreateVideoDecoder(const Guid: TGUID; const pVideoDesc: TDXVA2_VideoDesc; const pConfig: TDXVA2_ConfigPictureDecode;
-            ppDecoderRenderTargets: PIDirect3DSurface9; NumRenderTargets: UINT; out ppDecode: IDirectXVideoDecoder): HResult; stdcall;
+            ppDecoderRenderTargets{arraysize NumRenderTargets}: PIDirect3DSurface9; NumRenderTargets: UINT; out ppDecode: IDirectXVideoDecoder): HResult; stdcall;
     end;
 
 
     IDirectXVideoProcessorService = interface(IDirectXVideoAccelerationService)
         ['{fc51a552-d5e7-11d9-af55-00054e43ff02}']
         function RegisterVideoProcessorSoftwareDevice(pCallbacks: pointer): HResult; stdcall;
-        function GetVideoProcessorDeviceGuids(const pVideoDesc: TDXVA2_VideoDesc; out pCount: UINT; out pGuids: PGUID): HResult; stdcall;
+        function GetVideoProcessorDeviceGuids(const pVideoDesc: TDXVA2_VideoDesc; out pCount: UINT; out pGuids{arraysize pCount}: PGUID): HResult; stdcall;
         function GetVideoProcessorRenderTargets(const VideoProcDeviceGuid: TGUID; const pVideoDesc: TDXVA2_VideoDesc;
-            out pCount: UINT; out pFormats: PD3DFORMAT): HResult; stdcall;
+            out pCount: UINT; out pFormats{arraysize pCount}: PD3DFORMAT): HResult; stdcall;
         function GetVideoProcessorSubStreamFormats(const VideoProcDeviceGuid: TGUID; const pVideoDesc: TDXVA2_VideoDesc;
             RenderTargetFormat: TD3DFORMAT; out pCount: UINT; out pFormats: PD3DFORMAT): HResult; stdcall;
         function GetVideoProcessorCaps(const VideoProcDeviceGuid: TGUID; const pVideoDesc: TDXVA2_VideoDesc;
@@ -549,9 +556,9 @@ type
         ['{f2b0810a-fd00-43c9-918c-df94e2d8ef7d}']
         function GetVideoDecoderService(out ppService: IDirectXVideoDecoderService): HResult; stdcall;
         function GetCreationParameters(out pDeviceGuid: TGUID; out pVideoDesc: TDXVA2_VideoDesc;
-            out pConfig: TDXVA2_ConfigPictureDecode; out pDecoderRenderTargets: PIDirect3DSurface9;
+            out pConfig: TDXVA2_ConfigPictureDecode; out pDecoderRenderTargets{arraysize pNumSurfaces}: PIDirect3DSurface9;
             out pNumSurfaces: UINT): HResult; stdcall;
-        function GetBuffer(BufferType: UINT; out ppBuffer; out pBufferSize: UINT): HResult; stdcall;
+        function GetBuffer(BufferType: UINT; out ppBuffer:pointer; out pBufferSize: UINT): HResult; stdcall;
         function ReleaseBuffer(BufferType: UINT): HResult; stdcall;
         function BeginFrame(pRenderTarget: IDirect3DSurface9; pvPVPData: Pointer): HResult; stdcall;
         function EndFrame(var pHandleComplete: THANDLE): HResult; stdcall;
@@ -568,7 +575,7 @@ type
         function GetProcAmpRange(ProcAmpCap: UINT; out pRange: TDXVA2_ValueRange): HResult; stdcall;
         function GetFilterPropertyRange(FilterSetting: UINT; out pRange: TDXVA2_ValueRange): HResult; stdcall;
         function VideoProcessBlt(pRenderTarget: IDirect3DSurface9; const pBltParams: TDXVA2_VideoProcessBltParams;
-            const pSamples: PDXVA2_VideoSample; NumSamples: UINT; var pHandleComplete: THANDLE): HResult; stdcall;
+            const pSamples{arraysize NumSamples}: PDXVA2_VideoSample; NumSamples: UINT; var pHandleComplete: THANDLE): HResult; stdcall;
     end;
 
 

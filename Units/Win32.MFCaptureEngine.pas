@@ -1,4 +1,7 @@
-unit CMC.MFCaptureEngine;
+unit Win32.MFCaptureEngine;
+
+// Updated to SDK 10.0.17763.0
+// (c) Translation to Pascal by Norbert Sonnleitner
 
 {$IFDEF FPC}
 {$mode delphi}
@@ -8,7 +11,7 @@ interface
 
 uses
     Windows, Classes, SysUtils, ActiveX,
-    CMC.MFObjects, CMC.MFIdl;
+    Win32.MFObjects, Win32.MFIdl;
 
 const
     IID_IMFCaptureEngineOnEventCallback: TGUID = '{aeda51c0-9025-4983-9012-de597b88b089}';
@@ -41,6 +44,10 @@ const
     MF_CAPTURE_ENGINE_CAMERA_STREAM_BLOCKED: TGUID = '{A4209417-8D39-46F3-B759-5912528F4207}';
     MF_CAPTURE_ENGINE_CAMERA_STREAM_UNBLOCKED: TGUID = '{9BE9EEF0-CDAF-4717-8564-834AAE66415C}';
     MF_CAPTURE_ENGINE_D3D_MANAGER: TGUID = '{76e25e7b-d595-4283-962c-c594afd78ddf}';
+    MF_CAPTURE_ENGINE_MEDIA_CATEGORY: TGUID = '{8e3f5bd5-dbbf-42f0-8542-d07a3971762a}';
+    MF_CAPTURE_ENGINE_AUDIO_PROCESSING: TGUID = '{10f1be5e-7e11-410b-973d-f4b6109000fe}';
+
+
     MF_CAPTURE_ENGINE_RECORD_SINK_VIDEO_MAX_UNPROCESSED_SAMPLES: TGUID = '{b467f705-7913-4894-9d42-a215fea23da9}';
     MF_CAPTURE_ENGINE_RECORD_SINK_AUDIO_MAX_UNPROCESSED_SAMPLES: TGUID = '{1cddb141-a7f4-4d58-9896-4d15a53c4efe}';
     MF_CAPTURE_ENGINE_RECORD_SINK_VIDEO_MAX_PROCESSED_SAMPLES: TGUID = '{e7b4a49e-382c-4aef-a946-aed5490b7111}';
@@ -101,11 +108,23 @@ type
         MF_CAPTURE_ENGINE_STREAM_CATEGORY_UNSUPPORTED = $5
         );
 
+    TMF_CAPTURE_ENGINE_MEDIA_CATEGORY_TYPE = (
+        MF_CAPTURE_ENGINE_MEDIA_CATEGORY_TYPE_OTHER = 0,
+        MF_CAPTURE_ENGINE_MEDIA_CATEGORY_TYPE_COMMUNICATIONS = 1,
+        MF_CAPTURE_ENGINE_MEDIA_CATEGORY_TYPE_MEDIA = 2,
+        MF_CAPTURE_ENGINE_MEDIA_CATEGORY_TYPE_GAMECHAT = 3,
+        MF_CAPTURE_ENGINE_MEDIA_CATEGORY_TYPE_SPEECH = 4
+        );
+
+    TMF_CAPTURE_ENGINE_AUDIO_PROCESSING_MODE = (
+        MF_CAPTURE_ENGINE_AUDIO_PROCESSING_DEFAULT = 0,
+        MF_CAPTURE_ENGINE_AUDIO_PROCESSING_RAW = 1
+        );
+
 
     IMFCaptureEngineOnEventCallback = interface(IUnknown)
         ['{aeda51c0-9025-4983-9012-de597b88b089}']
         function OnEvent(pEvent: IMFMediaEvent): HResult; stdcall;
-
     end;
 
 
@@ -213,6 +232,7 @@ type
     end;
 
 
+    // also defined in Win32.MFIdl
     IMFCapturePhotoConfirmation = interface(IUnknown)
         ['{19f68549-ca8a-4706-a4ef-481dbc95e12c}']
         function SetPhotoConfirmationCallback(pNotificationCallback: IMFAsyncCallback): HResult; stdcall;

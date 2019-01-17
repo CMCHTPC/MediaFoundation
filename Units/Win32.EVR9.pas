@@ -1,4 +1,6 @@
-unit CMC.EVR9;
+unit Win32.EVR9;
+
+// Checked (and Updated) for SDK 10.0.17763.0 on 2018-12-04
 
 {$IFDEF FPC}
 {$mode delphi}
@@ -8,9 +10,8 @@ interface
 
 uses
     Windows, Classes, SysUtils, ActiveX, Direct3D9,
-    CMC.MFObjects, CMC.MFTransform, CMC.EVR,
-    CMC.DXVA2API
-    ;
+    Win32.MFObjects, Win32.MFTransform, Win32.EVR,
+    Win32.DXVA2API;
 
 const
     IID_IEVRVideoStreamControl: TGUID = '{d0cfe38b-93e7-4772-8957-0400c49a4485}';
@@ -28,7 +29,7 @@ type
 
     IMFVideoProcessor = interface(IUnknown)
         ['{6AB0000C-FECE-4d1f-A2AC-A9573530656E}']
-        function GetAvailableVideoProcessorModes(var lpdwNumProcessingModes: UINT; out ppVideoProcessingModes: PGUID): HResult; stdcall;
+        function GetAvailableVideoProcessorModes(var lpdwNumProcessingModes: UINT; out ppVideoProcessingModes {arraysize lpdwNumProcessingModes}: PGUID): HResult; stdcall;
         function GetVideoProcessorCaps(const lpVideoProcessorMode: TGUID; out lpVideoProcessorCaps: TDXVA2_VideoProcessorCaps): HResult;
             stdcall;
         function GetVideoProcessorMode(out lpMode: TGUID): HResult; stdcall;

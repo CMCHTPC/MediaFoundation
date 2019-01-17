@@ -10,7 +10,10 @@
 
 \*=========================================================================*)
 
-unit CMC.DWMAPI;
+// Checked and Updated to SDK 10.0.17763.0
+// (c) Translation to Pascal by Norbert Sonnleitner
+
+unit Win32.DWMAPI;
 
 {$mode delphi}
 
@@ -131,21 +134,16 @@ type
 
     TDWM_TIMING_INFO = packed record
         cbSize: UINT32;
-
         // Data on DWM composition overall
 
         // Monitor refresh rate
         rateRefresh: TUNSIGNED_RATIO;
-
         // Actual period
         qpcRefreshPeriod: TQPC_TIME;
-
         // composition rate
         rateCompose: TUNSIGNED_RATIO;
-
         // QPC time at a VSync interupt
         qpcVBlank: TQPC_TIME;
-
         // DWM refresh count of the last vsync
         // DWM refresh count is a 64bit number where zero is
         // the first refresh the DWM woke up to process
@@ -372,6 +370,55 @@ type
         DWMTRANSITION_OWNEDWINDOW_REPOSITION = 0);
 
 
+
+    //{$if (NTDDI_VERSION >= NTDDI_WIN10_RS4)}
+
+    TDWM_TAB_WINDOW_REQUIREMENTS = (
+        // This result means the window meets all requirements requested.
+        DWMTWR_NONE = $0000,
+
+        // In some configurations, admin/user setting or mode of the system means that windows won't be tabbed
+        // This requirement says that the system/mode must implement tabbing and if it does not
+        // nothing can be done to change this.
+        DWMTWR_IMPLEMENTED_BY_SYSTEM = $0001,
+
+        // The window has an owner or parent so is ineligible for tabbing.
+        DWMTWR_WINDOW_RELATIONSHIP = $0002,
+
+        // The window has styles that make it ineligible for tabbing.
+        // To be eligible windows must:
+        // Have the WS_OVERLAPPEDWINDOW (WS_CAPTION, WS_THICKFRAME, etc.) styles set.
+        // Not have WS_POPUP, WS_CHILD or WS_DLGFRAME set.
+        // Not have WS_EX_TOPMOST or WS_EX_TOOLWINDOW set.
+        DWMTWR_WINDOW_STYLES = $0004,
+
+        // The window has a region (set using SetWindowRgn) making it ineligible.
+        DWMTWR_WINDOW_REGION = $0008,
+
+        // The window is ineligible due to its Dwm configuration.
+        // It must not extended its client area into the title bar using DwmExtendFrameIntoClientArea
+        // It must not have DWMWA_NCRENDERING_POLICY set to DWMNCRP_ENABLED
+        DWMTWR_WINDOW_DWM_ATTRIBUTES = $0010,
+
+        // The window is ineligible due to it's margins, most likely due to custom handling in WM_NCCALCSIZE.
+        // The window must use the default window margins for the non-client area.
+        DWMTWR_WINDOW_MARGINS = $0020,
+
+        // The window has been explicitly opted out by setting DWMWA_TABBING_ENABLED to FALSE.
+        DWMTWR_TABBING_ENABLED = $0040,
+
+        // The user has configured this application to not participate in tabbing.
+        DWMTWR_USER_POLICY = $0080,
+
+        // The group policy has configured this application to not participate in tabbing.
+        DWMTWR_GROUP_POLICY = $0100,
+
+        // This is set if app compat has blocked tabs for this window. Can be overridden per window by setting
+        // DWMWA_TABBING_ENABLED to TRUE. That does not override any other tabbing requirements.
+        DWMTWR_APP_COMPAT = $0200);
+//{$endif} // NTDDI_WIN10_RS4
+
+
 function DwmDefWindowProc(hWnd: HWND; msg: UINT; wParam: WPARAM; lParam: LPARAM; out plResult: LRESULT): boolean;
     stdcall; external DWMAPI_DLL;
 
@@ -388,7 +435,6 @@ function DwmExtendFrameIntoClientArea(hWnd: HWND; const pMarInset: TMARGINS): HR
 function DwmGetColorizationColor(out pcrColorization: DWORD; out pfOpaqueBlend: boolean): HResult; stdcall; external DWMAPI_DLL;
 
 function DwmGetCompositionTimingInfo(hwnd: HWND; out pTimingInfo: TDWM_TIMING_INFO): HResult; stdcall; external DWMAPI_DLL;
-
 
 function DwmGetWindowAttribute(hwnd: HWND; dwAttribute: DWORD; out pvAttribute: Pointer; cbAttribute: DWORD): HResult;
     stdcall; external DWMAPI_DLL;
@@ -424,21 +470,17 @@ function DwmInvalidateIconicBitmaps(hwnd: HWND): HResult; stdcall; external DWMA
 
 
 function DwmAttachMilContent(hwnd: HWND): HResult; stdcall; external DWMAPI_DLL;
-
 function DwmDetachMilContent(hwnd: HWND): HResult; stdcall; external DWMAPI_DLL;
-
 function DwmFlush(): HResult; stdcall; external DWMAPI_DLL;
 
 
 function DwmGetGraphicsStreamTransformHint(uIndex: UINT; out pTransform: TMilMatrix3x2D): HResult; stdcall; external DWMAPI_DLL;
-
 function DwmGetGraphicsStreamClient(uIndex: UINT; out pClientUuid: TGUID //UUID
     ): HResult; stdcall; external DWMAPI_DLL;
 
 
 function DwmGetTransportAttributes(out pfIsRemoting: boolean; out pfIsConnected: boolean; out pDwGeneration: DWORD): HResult;
     stdcall; external DWMAPI_DLL;
-
 
 function DwmTransitionOwnedWindow(hwnd: HWND; target: TDWMTRANSITION_OWNEDWINDOW_TARGET): HResult; stdcall; external DWMAPI_DLL;
 
@@ -450,6 +492,11 @@ function DwmTetherContact(dwPointerID: DWORD; fEnable: boolean; ptTether: TPOINT
 
 
 function DwmShowContact(dwPointerID: DWORD; eShowContact: TDWM_SHOWCONTACT): HResult; stdcall; external DWMAPI_DLL;
+
+//{$if (NTDDI_VERSION >= NTDDI_WIN10_RS4)}
+// Checks the requirements needed to get tabs in the application title bar.
+function DwmGetUnmetTabRequirements(appWindow: HWND; out Value: TDWM_TAB_WINDOW_REQUIREMENTS): HResult; stdcall; external DWMAPI_DLL;
+//{$endif} // NTDDI_WIN10_RS4
 
 {$A4}
 {$Z4}

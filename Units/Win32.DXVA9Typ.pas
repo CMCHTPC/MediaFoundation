@@ -7,7 +7,10 @@
  *
  ****************************************************************************)
 
-unit CMC.DXVA9Typ;
+unit Win32.DXVA9Typ;
+
+// Checked with SDK 10.0.17763.0
+// (c) Translation to Pascal by Norbert Sonnleitner
 
 {$IFDEF FPC}
 {$mode delphi}
@@ -147,15 +150,6 @@ const
 
     COPP_ImageAspectRatio_EN300294_Mask = $00000007;
 
-const
-    D3DPOOL_DEFAULT = 0;
-    D3DPOOL_MANAGED = 1;
-    D3DPOOL_SYSTEMMEM = 2;
-    D3DPOOL_SCRATCH = 3;
-    D3DPOOL_LOCALVIDMEM = 4;
-    D3DPOOL_NONLOCALVIDMEM = 5;
-    D3DPOOL_FORCE_DWORD = $7fffffff;
-
 
 type
 
@@ -203,13 +197,10 @@ type
 
 
     TDXVA_ConfigPictureDecode = packed record
-
         // Operation Indicated
         dwFunction: TDXVA_ConfigQueryOrReplyFunc;
-
         // Alignment
         dwReservedBits: array [0..2] of DWORD;
-
         // Encryption GUIDs
         guidConfigBitstreamEncryption: TGUID;
         guidConfigMBcontrolEncryption: TGUID;
@@ -238,7 +229,6 @@ type
     PDXVA_ConfigPictureDecode = ^TDXVA_ConfigPictureDecode;
 
     TDXVA_PictureParameters = packed record
-
         wDecodedPictureIndex: word;
         wDeblockedPictureIndex: word;
 
@@ -302,7 +292,15 @@ type
     IDirect3DSurface9 = DWORD;
     PIDirect3DSurface9 = ^IDirect3DSurface9;
 
-    TD3DFORMAT = DWORD;
+    TD3DFORMAT = (
+    D3DPOOL_DEFAULT = 0,
+    D3DPOOL_MANAGED = 1,
+    D3DPOOL_SYSTEMMEM = 2,
+    D3DPOOL_SCRATCH = 3,
+    D3DPOOL_LOCALVIDMEM = 4,
+    D3DPOOL_NONLOCALVIDMEM = 5,
+    D3DPOOL_FORCE_DWORD = $7fffffff)
+      ;
     PD3DFORMAT = ^TD3DFORMAT;
 
     TD3DPOOL = DWORD;
@@ -466,10 +464,7 @@ type
     // The definitions that follow describe the video de-interlace interface
     // between the VMR and the graphics device driver.  This interface is not
     // accessable via the IAMVideoAccelerator interface.
-
     // -------------------------------------------------------------------------
-
-
     TREFERENCE_TIME = LONGLONG;
 
 
@@ -561,7 +556,6 @@ type
     // -------------------------------------------------------------------------
     // DeinterlaceBltEx declarations
     // -------------------------------------------------------------------------
-
 
     TDXVA_SampleFlags = (
         DXVA_SampleFlagsMask = (1 shl 3) or (1 shl 2) or (1 shl 1) or (1 shl 1),
@@ -692,9 +686,7 @@ type
     // The definitions that follow describe the video ProcAmp interface
     // between the VMR and the graphics device driver.  This interface is not
     // accessable via the IAMVideoAccelerator interface.
-
     // -------------------------------------------------------------------------
-
 
     TDXVA_ProcAmpControlProp = (
         DXVA_ProcAmp_None = $0000,

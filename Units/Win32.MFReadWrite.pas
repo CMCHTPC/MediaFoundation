@@ -1,4 +1,7 @@
-unit CMC.MFReadWrite;
+unit Win32.MFReadWrite;
+
+// Checked and Updated to SDK 10.0.17763.0
+// (c) Translation to Pascal by Norbert Sonnleitner
 
 {$IFDEF FPC}
 {$mode delphi}
@@ -8,7 +11,7 @@ interface
 
 uses
     Windows, Classes, SysUtils, ActiveX,
-    CMC.MFObjects, CMC.MFTransform,CMC.MFIdl;
+    Win32.MFObjects, Win32.MFTransform,Win32.MFIdl;
 
 const
     MFReadWrite_DLL = 'Mfreadwrite.dll';
@@ -45,6 +48,7 @@ const
     MF_SINK_WRITER_D3D_MANAGER: TGUID = '{ec822da2-e1e9-4b29-a0d8-563c719f5269}';
     MF_SINK_WRITER_ENCODER_CONFIG: TGUID = '{ad91cd04-a7cc-4ac7-99b6-a57b9a4a7c70}';
     MF_READWRITE_DISABLE_CONVERTERS: TGUID = '{98d5b065-1374-4847-8d5d-31520fee7156}';
+
     MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS: TGUID = '{a634a91c-822b-41b9-a494-4de4643612b0}';
     MF_READWRITE_MMCSS_CLASS: TGUID = '{39384300-d0eb-40b1-87a0-3318871b5a53}';
     MF_READWRITE_MMCSS_PRIORITY: TGUID = '{43ad19ce-f33f-4ba9-a580-e4cd12f2d144}';
@@ -125,7 +129,7 @@ type
         function GetNativeMediaType(dwStreamIndex: DWORD; dwMediaTypeIndex: DWORD; out ppMediaType: IMFMediaType): HResult; stdcall;
         function GetCurrentMediaType(dwStreamIndex: DWORD; out ppMediaType: IMFMediaType): HResult; stdcall;
         function SetCurrentMediaType(dwStreamIndex: DWORD; var pdwReserved: DWORD; pMediaType: IMFMediaType): HResult; stdcall;
-        function SetCurrentPosition(const guidTimeFormat: TGUID; const varPosition: PROPVARIANT): HResult; stdcall;
+        function SetCurrentPosition(const guidTimeFormat: TGUID; varPosition: PPROPVARIANT): HResult; stdcall;
         function ReadSample(dwStreamIndex: DWORD; dwControlFlags: DWORD; out pdwActualStreamIndex: DWORD;
             out pdwStreamFlags: DWORD; out pllTimestamp: LONGLONG; out ppSample: IMFSample): HResult; stdcall;
         function Flush(dwStreamIndex: DWORD): HResult; stdcall;

@@ -6,7 +6,10 @@
 // Copyright (c) 1999 - 2005, Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------------------------
 
-unit CMC.DXVA2Trace;
+unit Win32.DXVA2Trace;
+
+// Updated to SDK 10.0.17763.0
+// (c) Translation to Pascal by Norbert Sonnleitner
 
 {$IFDEF FPC}
 {$mode delphi}

@@ -7,7 +7,7 @@
 // Copyright (c) 1999 - 2002, Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------------------------
 
-unit CMC.DXVA2SWDev;
+unit Win32.DXVA2SWDev;
 
 {$IFDEF FPC}
 {$mode delphi}
@@ -17,7 +17,7 @@ interface
 
 uses
     Windows, Classes, SysUtils, Direct3D9,
-    CMC.DXVA2API;
+    Win32.DXVA2API;
 
 type
 
@@ -77,7 +77,7 @@ type
     PDXVA2SW_GETVIDEOPROCESSORRENDERTARGETCOUNT = function(const pVideoDesc: TDXVA2_VideoDesc; out pCount: UINT): HResult; stdcall;
 
     PDXVA2SW_GETVIDEOPROCESSORRENDERTARGETS = function(const pVideoDesc: TDXVA2_VideoDesc; Count: UINT;
-        out pFormats: PD3DFORMAT): HResult; stdcall;
+        out pFormats {arraysize Count}: PD3DFORMAT): HResult; stdcall;
 
     PDXVA2SW_GETVIDEOPROCESSORCAPS = function(const pVideoDesc: TDXVA2_VideoDesc; RenderTargetFormat: TD3DFORMAT;
         out pCaps: TDXVA2_VideoProcessorCaps): HResult; stdcall;
@@ -86,7 +86,7 @@ type
         RenderTargetFormat: TD3DFORMAT; out pCount: UINT): HResult; stdcall;
 
     PDXVA2SW_GETVIDEOPROCESSORSUBSTREAMFORMATS = function(const pVideoDesc: TDXVA2_VideoDesc; RenderTargetFormat: TD3DFORMAT;
-        Count: UINT; out pFormats: PD3DFORMAT): HResult; stdcall;
+        Count: UINT; out pFormats {arraysize Count}: PD3DFORMAT): HResult; stdcall;
 
     PDXVA2SW_GETPROCAMPRANGE = function(const pVideoDesc: TDXVA2_VideoDesc; RenderTargetFormat: TD3DFORMAT;
         ProcAmpCap: UINT; out pRange: TDXVA2_ValueRange): HResult; stdcall;

@@ -1,4 +1,7 @@
-unit CMC.MFObjects;
+unit Win32.MFObjects;
+
+// Updated to SDK 10.0.17763.0
+// (c) Translation to Pascal by Norbert Sonnleitner
 
 {$IFDEF FPC}
 {$mode delphi}
@@ -10,7 +13,7 @@ interface
 {$A4}
 
 uses
-    Windows, Classes, SysUtils, CMC.MediaObj, CMC.WTypes, ActiveX;
+    Windows, Classes, SysUtils, Win32.MediaObj, Win32.WTypes, ActiveX;
 
 const
     MFPlat_DLL = 'MFPlat.dll';
@@ -40,6 +43,11 @@ const
     IID_IMFPluginControl: TGUID = '{5c6c44bf-1db6-435b-9249-e8cd10fdec96}';
     IID_IMFPluginControl2: TGUID = '{C6982083-3DDC-45CB-AF5E-0F7A8CE4DE77}';
     IID_IMFDXGIDeviceManager: TGUID = '{eb533d5d-2db6-40f8-97a9-494692014f07}';
+
+    IID_IMFMuxStreamAttributesManager: TGUID = '{CE8BD576-E440-43B3-BE34-1E53F565F7E8}';
+    IID_IMFMuxStreamMediaTypeManager: TGUID = '{505A2C72-42F7-4690-AEAB-8F513D0FFDB8}';
+    IID_IMFMuxStreamSampleManager: TGUID = '{74ABBC19-B1CC-4E41-BB8B-9D9B86A8F6CA}';
+
     MF_BYTESTREAM_ORIGIN_NAME: TGUID = '{fc358288-3cb6-460c-a424-b6681260375a}';
     MF_BYTESTREAM_CONTENT_TYPE: TGUID = '{fc358289-3cb6-460c-a424-b6681260375a}';
     MF_BYTESTREAM_DURATION: TGUID = '{fc35828a-3cb6-460c-a424-b6681260375a}';
@@ -82,135 +90,10 @@ const
     MFBYTESTREAM_IS_PARTIALLY_DOWNLOADED = $00000200;
 
     MFBYTESTREAM_SHARE_WRITE = $00000400;
-
-
     MFBYTESTREAM_DOES_NOT_USE_NETWORK = $00000800;
-
     MFBYTESTREAM_SEEK_FLAG_CANCEL_PENDING_IO = $00000001;
 
     MF_EVENT_FLAG_NO_WAIT = $00000001;
-
-const
-    MEUnknown = 0;
-    MEError = 1;
-    MEExtendedType = 2;
-    MENonFatalError = 3;
-    MEGenericV1Anchor = MENonFatalError;
-    MESessionUnknown = 100;
-    MESessionTopologySet = 101;
-    MESessionTopologiesCleared = 102;
-    MESessionStarted = 103;
-    MESessionPaused = 104;
-    MESessionStopped = 105;
-    MESessionClosed = 106;
-    MESessionEnded = 107;
-    MESessionRateChanged = 108;
-    MESessionScrubSampleComplete = 109;
-    MESessionCapabilitiesChanged = 110;
-    MESessionTopologyStatus = 111;
-    MESessionNotifyPresentationTime = 112;
-    MENewPresentation = 113;
-    MELicenseAcquisitionStart = 114;
-    MELicenseAcquisitionCompleted = 115;
-    MEIndividualizationStart = 116;
-    MEIndividualizationCompleted = 117;
-    MEEnablerProgress = 118;
-    MEEnablerCompleted = 119;
-    MEPolicyError = 120;
-    MEPolicyReport = 121;
-    MEBufferingStarted = 122;
-    MEBufferingStopped = 123;
-    MEConnectStart = 124;
-    MEConnectEnd = 125;
-    MEReconnectStart = 126;
-    MEReconnectEnd = 127;
-    MERendererEvent = 128;
-    MESessionStreamSinkFormatChanged = 129;
-    MESessionV1Anchor = MESessionStreamSinkFormatChanged;
-    MESourceUnknown = 200;
-    MESourceStarted = 201;
-    MEStreamStarted = 202;
-    MESourceSeeked = 203;
-    MEStreamSeeked = 204;
-    MENewStream = 205;
-    MEUpdatedStream = 206;
-    MESourceStopped = 207;
-    MEStreamStopped = 208;
-    MESourcePaused = 209;
-    MEStreamPaused = 210;
-    MEEndOfPresentation = 211;
-    MEEndOfStream = 212;
-    MEMediaSample = 213;
-    MEStreamTick = 214;
-    MEStreamThinMode = 215;
-    MEStreamFormatChanged = 216;
-    MESourceRateChanged = 217;
-    MEEndOfPresentationSegment = 218;
-    MESourceCharacteristicsChanged = 219;
-    MESourceRateChangeRequested = 220;
-    MESourceMetadataChanged = 221;
-    MESequencerSourceTopologyUpdated = 222;
-    MESourceV1Anchor = MESequencerSourceTopologyUpdated;
-    MESinkUnknown = 300;
-    MEStreamSinkStarted = 301;
-    MEStreamSinkStopped = 302;
-    MEStreamSinkPaused = 303;
-    MEStreamSinkRateChanged = 304;
-    MEStreamSinkRequestSample = 305;
-    MEStreamSinkMarker = 306;
-    MEStreamSinkPrerolled = 307;
-    MEStreamSinkScrubSampleComplete = 308;
-    MEStreamSinkFormatChanged = 309;
-    MEStreamSinkDeviceChanged = 310;
-    MEQualityNotify = 311;
-    MESinkInvalidated = 312;
-    MEAudioSessionNameChanged = 313;
-    MEAudioSessionVolumeChanged = 314;
-    MEAudioSessionDeviceRemoved = 315;
-    MEAudioSessionServerShutdown = 316;
-    MEAudioSessionGroupingParamChanged = 317;
-    MEAudioSessionIconChanged = 318;
-    MEAudioSessionFormatChanged = 319;
-    MEAudioSessionDisconnected = 320;
-    MEAudioSessionExclusiveModeOverride = 321;
-    MESinkV1Anchor = MEAudioSessionExclusiveModeOverride;
-    MECaptureAudioSessionVolumeChanged = 322;
-    MECaptureAudioSessionDeviceRemoved = 323;
-    MECaptureAudioSessionFormatChanged = 324;
-    MECaptureAudioSessionDisconnected = 325;
-    MECaptureAudioSessionExclusiveModeOverride = 326;
-    MECaptureAudioSessionServerShutdown = 327;
-    MESinkV2Anchor = MECaptureAudioSessionServerShutdown;
-    METrustUnknown = 400;
-    MEPolicyChanged = 401;
-    MEContentProtectionMessage = 402;
-    MEPolicySet = 403;
-    METrustV1Anchor = MEPolicySet;
-    MEWMDRMLicenseBackupCompleted = 500;
-    MEWMDRMLicenseBackupProgress = 501;
-    MEWMDRMLicenseRestoreCompleted = 502;
-    MEWMDRMLicenseRestoreProgress = 503;
-    MEWMDRMLicenseAcquisitionCompleted = 506;
-    MEWMDRMIndividualizationCompleted = 508;
-    MEWMDRMIndividualizationProgress = 513;
-    MEWMDRMProximityCompleted = 514;
-    MEWMDRMLicenseStoreCleaned = 515;
-    MEWMDRMRevocationDownloadCompleted = 516;
-    MEWMDRMV1Anchor = MEWMDRMRevocationDownloadCompleted;
-    METransformUnknown = 600;
-    METransformNeedInput = (METransformUnknown + 1);
-    METransformHaveOutput = (METransformNeedInput + 1);
-    METransformDrainComplete = (METransformHaveOutput + 1);
-    METransformMarker = (METransformDrainComplete + 1);
-    METransformInputStreamStateChanged = (METransformMarker + 1);
-    MEByteStreamCharacteristicsChanged = 700;
-    MEVideoCaptureDeviceRemoved = 800;
-    MEVideoCaptureDevicePreempted = 801;
-    MEStreamSinkFormatInvalidated = 802;
-    MEEncodingParameters = 803;
-    MEContentProtectionMetadata = 900;
-    MEDeviceThermalStateChanged = 950;
-    MEReservedMax = 10000;
 
 type
     {$IFNDEF FPC}
@@ -219,7 +102,6 @@ type
     QWORD = ULONGLONG;
 
     TREFGUID = ^TGUID;
-    TMediaEventType = DWORD;
 
 {$Z1}
 {$A1}
@@ -286,7 +168,7 @@ type
         ['{2cd2d921-c447-44a7-a13c-4adabfc247e3}']
         function GetItem(const guidKey: TGUID; var pValue: TPROPVARIANT): HResult; stdcall;
         function GetItemType(const guidKey: TGUID; out pType: TMF_ATTRIBUTE_TYPE): HResult; stdcall;
-        function CompareItem(const guidKey: TGUID; const Value: TPROPVARIANT; out pbResult: boolean): HResult; stdcall;
+        function CompareItem(const guidKey: TGUID; const Value: PPROPVARIANT; out pbResult: boolean): HResult; stdcall;
         function Compare(pTheirs: IMFAttributes; MatchType: TMF_ATTRIBUTES_MATCH_TYPE; out pbResult: boolean): HResult; stdcall;
         function GetUINT32(const guidKey: TGUID; out punValue: UINT32): HResult; stdcall;
         function GetUINT64(const guidKey: TGUID; out punValue: UINT64): HResult; stdcall;
@@ -299,7 +181,7 @@ type
         function GetBlob(const guidKey: TGUID; out pBuf: PUINT8; cbBufSize: UINT32; var pcbBlobSize: UINT32): HResult; stdcall;
         function GetAllocatedBlob(const guidKey: TGUID; out ppBuf: PUINT8; out pcbSize: UINT32): HResult; stdcall;
         function GetUnknown(const guidKey: TGUID; const riid: TGUID; out ppv: pointer): HResult; stdcall;
-        function SetItem(const guidKey: TGUID; const Value: TPROPVARIANT): HResult; stdcall;
+        function SetItem(const guidKey: TGUID; Value: PPROPVARIANT): HResult; stdcall;
         function DeleteItem(const guidKey: TGUID): HResult; stdcall;
         function DeleteAllItems(): HResult; stdcall;
         function SetUINT32(const guidKey: TGUID; unValue: UINT32): HResult; stdcall;
@@ -312,7 +194,7 @@ type
         function LockStore(): HResult; stdcall;
         function UnlockStore(): HResult; stdcall;
         function GetCount(out pcItems: UINT32): HResult; stdcall;
-        function GetItemByIndex(unIndex: UINT32; out pguidKey: TGUID; var pValue: PROPVARIANT): HResult; stdcall;
+        function GetItemByIndex(unIndex: UINT32; out pguidKey: TGUID; var pValue: TPROPVARIANT): HResult; stdcall;
         function CopyAllItems(pDest: IMFAttributes): HResult; stdcall;
     end;
 
@@ -348,9 +230,9 @@ type
 
     IMF2DBuffer = interface(IUnknown)
         ['{7DC9D5F9-9ED9-44ec-9BBF-0600BB589FBB}']
-        function Lock2D(out ppbScanline0: PBYTE; out plPitch: LONGINT): HResult; stdcall;
+        function Lock2D(out ppbScanline0: PBYTE; out plPitch: longint): HResult; stdcall;
         function Unlock2D(): HResult; stdcall;
-        function GetScanline0AndPitch(out pbScanline0: PBYTE; out plPitch: LONGINT): HResult; stdcall;
+        function GetScanline0AndPitch(out pbScanline0: PBYTE; out plPitch: longint): HResult; stdcall;
         function IsContiguousFormat(out pfIsContiguous: boolean): HResult; stdcall;
         function GetContiguousLength(out pcbLength: DWORD): HResult; stdcall;
         function ContiguousCopyTo(out pbDestBuffer: PBYTE; cbDestBuffer: DWORD): HResult; stdcall;
@@ -368,7 +250,7 @@ type
 
     IMF2DBuffer2 = interface(IMF2DBuffer)
         ['{33ae5ea6-4316-436f-8ddd-d73d22f829ec}']
-        function Lock2DSize(lockFlags: TMF2DBuffer_LockFlags; out ppbScanline0: PBYTE; out plPitch: LONGINT;
+        function Lock2DSize(lockFlags: TMF2DBuffer_LockFlags; out ppbScanline0: PBYTE; out plPitch: longint;
             out ppbBufferStart: PBYTE; out pcbBufferLength: DWORD): HResult; stdcall;
         function Copy2DTo(pDestBuffer: IMF2DBuffer2): HResult; stdcall;
     end;
@@ -405,14 +287,14 @@ type
 
     TBITMAPINFOHEADER = record
         biSize: DWORD;
-        biWidth: LONGINT;
-        biHeight: LONGINT;
+        biWidth: longint;
+        biHeight: longint;
         biPlanes: word;
         biBitCount: word;
         biCompression: DWORD;
         biSizeImage: DWORD;
-        biXPelsPerMeter: LONGINT;
-        biYPelsPerMeter: LONGINT;
+        biXPelsPerMeter: longint;
+        biYPelsPerMeter: longint;
         biClrUsed: DWORD;
         biClrImportant: DWORD;
     end;
@@ -462,7 +344,10 @@ type
         MFVideoTransFunc_2020_const = 12,
         MFVideoTransFunc_2020 = 13,
         MFVideoTransFunc_26 = 14,
-        MFVideoTransFunc_Last = (MFVideoTransFunc_26 + 1),
+        MFVideoTransFunc_2084 = 15,
+        MFVideoTransFunc_HLG = 16,
+        MFVideoTransFunc_10_rel = 17,
+        MFVideoTransFunc_Last = (MFVideoTransFunc_10_rel + 1),
         MFVideoTransFunc_ForceDWORD = $7fffffff
         );
 
@@ -478,7 +363,9 @@ type
         MFVideoPrimaries_SMPTE_C = 8,
         MFVideoPrimaries_BT2020 = 9,
         MFVideoPrimaries_XYZ = 10,
-        MFVideoPrimaries_Last = (MFVideoPrimaries_XYZ + 1),
+        MFVideoPrimaries_DCI_P3 = 11,
+        MFVideoPrimaries_ACES = 12,
+        MFVideoPrimaries_Last = (MFVideoPrimaries_ACES + 1),
         MFVideoPrimaries_ForceDWORD = $7fffffff
         );
 
@@ -657,8 +544,8 @@ type
 
     IMFVideoMediaType = interface(IMFMediaType)
         ['{b99f381f-a8f9-47a2-a5af-ca3a225a3890}']
-        function GetVideoFormat(): PMFVIDEOFORMAT; stdcall;
-        function GetVideoRepresentation(guidRepresentation: TGUID; out ppvRepresentation: pointer; lStride: LONGINT): HResult; stdcall;
+        function GetVideoFormat(): TMFVIDEOFORMAT; stdcall;
+        function GetVideoRepresentation(guidRepresentation: TGUID; out ppvRepresentation: pointer; lStride: longint): HResult; stdcall;
     end;
 
     IMFAsyncResult = interface(IUnknown)
@@ -682,12 +569,136 @@ type
         function GetObjectTag(): DWORD; stdcall;
     end;
 
+
+    TMediaEventType = (
+        MEUnknown = 0,
+        MEError = 1,
+        MEExtendedType = 2,
+        MENonFatalError = 3,
+        MEGenericV1Anchor = MENonFatalError,
+        MESessionUnknown = 100,
+        MESessionTopologySet = 101,
+        MESessionTopologiesCleared = 102,
+        MESessionStarted = 103,
+        MESessionPaused = 104,
+        MESessionStopped = 105,
+        MESessionClosed = 106,
+        MESessionEnded = 107,
+        MESessionRateChanged = 108,
+        MESessionScrubSampleComplete = 109,
+        MESessionCapabilitiesChanged = 110,
+        MESessionTopologyStatus = 111,
+        MESessionNotifyPresentationTime = 112,
+        MENewPresentation = 113,
+        MELicenseAcquisitionStart = 114,
+        MELicenseAcquisitionCompleted = 115,
+        MEIndividualizationStart = 116,
+        MEIndividualizationCompleted = 117,
+        MEEnablerProgress = 118,
+        MEEnablerCompleted = 119,
+        MEPolicyError = 120,
+        MEPolicyReport = 121,
+        MEBufferingStarted = 122,
+        MEBufferingStopped = 123,
+        MEConnectStart = 124,
+        MEConnectEnd = 125,
+        MEReconnectStart = 126,
+        MEReconnectEnd = 127,
+        MERendererEvent = 128,
+        MESessionStreamSinkFormatChanged = 129,
+        MESessionV1Anchor = MESessionStreamSinkFormatChanged,
+        MESourceUnknown = 200,
+        MESourceStarted = 201,
+        MEStreamStarted = 202,
+        MESourceSeeked = 203,
+        MEStreamSeeked = 204,
+        MENewStream = 205,
+        MEUpdatedStream = 206,
+        MESourceStopped = 207,
+        MEStreamStopped = 208,
+        MESourcePaused = 209,
+        MEStreamPaused = 210,
+        MEEndOfPresentation = 211,
+        MEEndOfStream = 212,
+        MEMediaSample = 213,
+        MEStreamTick = 214,
+        MEStreamThinMode = 215,
+        MEStreamFormatChanged = 216,
+        MESourceRateChanged = 217,
+        MEEndOfPresentationSegment = 218,
+        MESourceCharacteristicsChanged = 219,
+        MESourceRateChangeRequested = 220,
+        MESourceMetadataChanged = 221,
+        MESequencerSourceTopologyUpdated = 222,
+        MESourceV1Anchor = MESequencerSourceTopologyUpdated,
+        MESinkUnknown = 300,
+        MEStreamSinkStarted = 301,
+        MEStreamSinkStopped = 302,
+        MEStreamSinkPaused = 303,
+        MEStreamSinkRateChanged = 304,
+        MEStreamSinkRequestSample = 305,
+        MEStreamSinkMarker = 306,
+        MEStreamSinkPrerolled = 307,
+        MEStreamSinkScrubSampleComplete = 308,
+        MEStreamSinkFormatChanged = 309,
+        MEStreamSinkDeviceChanged = 310,
+        MEQualityNotify = 311,
+        MESinkInvalidated = 312,
+        MEAudioSessionNameChanged = 313,
+        MEAudioSessionVolumeChanged = 314,
+        MEAudioSessionDeviceRemoved = 315,
+        MEAudioSessionServerShutdown = 316,
+        MEAudioSessionGroupingParamChanged = 317,
+        MEAudioSessionIconChanged = 318,
+        MEAudioSessionFormatChanged = 319,
+        MEAudioSessionDisconnected = 320,
+        MEAudioSessionExclusiveModeOverride = 321,
+        MESinkV1Anchor = MEAudioSessionExclusiveModeOverride,
+        MECaptureAudioSessionVolumeChanged = 322,
+        MECaptureAudioSessionDeviceRemoved = 323,
+        MECaptureAudioSessionFormatChanged = 324,
+        MECaptureAudioSessionDisconnected = 325,
+        MECaptureAudioSessionExclusiveModeOverride = 326,
+        MECaptureAudioSessionServerShutdown = 327,
+        MESinkV2Anchor = MECaptureAudioSessionServerShutdown,
+        METrustUnknown = 400,
+        MEPolicyChanged = 401,
+        MEContentProtectionMessage = 402,
+        MEPolicySet = 403,
+        METrustV1Anchor = MEPolicySet,
+        MEWMDRMLicenseBackupCompleted = 500,
+        MEWMDRMLicenseBackupProgress = 501,
+        MEWMDRMLicenseRestoreCompleted = 502,
+        MEWMDRMLicenseRestoreProgress = 503,
+        MEWMDRMLicenseAcquisitionCompleted = 506,
+        MEWMDRMIndividualizationCompleted = 508,
+        MEWMDRMIndividualizationProgress = 513,
+        MEWMDRMProximityCompleted = 514,
+        MEWMDRMLicenseStoreCleaned = 515,
+        MEWMDRMRevocationDownloadCompleted = 516,
+        MEWMDRMV1Anchor = MEWMDRMRevocationDownloadCompleted,
+        METransformUnknown = 600,
+        METransformNeedInput = (METransformUnknown + 1),
+        METransformHaveOutput = (METransformNeedInput + 1),
+        METransformDrainComplete = (METransformHaveOutput + 1),
+        METransformMarker = (METransformDrainComplete + 1),
+        METransformInputStreamStateChanged = (METransformMarker + 1),
+        MEByteStreamCharacteristicsChanged = 700,
+        MEVideoCaptureDeviceRemoved = 800,
+        MEVideoCaptureDevicePreempted = 801,
+        MEStreamSinkFormatInvalidated = 802,
+        MEEncodingParameters = 803,
+        MEContentProtectionMetadata = 900,
+        MEDeviceThermalStateChanged = 950,
+        MEReservedMax = 10000);
+
+
     IMFMediaEvent = interface(IMFAttributes)
         ['{DF598932-F10C-4E39-BBA2-C308F101DAA3}']
         function GetType(out pmet: TMediaEventType): HResult; stdcall;
         function GetExtendedType(out pguidExtendedType: TGUID): HResult; stdcall;
         function GetStatus(out phrStatus: HRESULT): HResult; stdcall;
-        function GetValue(out pvValue: PROPVARIANT): HResult; stdcall;
+        function GetValue(out pvValue: TPROPVARIANT): HResult; stdcall;
     end;
 
     IMFMediaEventGenerator = interface(IUnknown)
@@ -695,8 +706,8 @@ type
         function GetEvent(dwFlags: DWORD; out ppEvent: IMFMediaEvent): HResult; stdcall;
         function BeginGetEvent(pCallback: IMFAsyncCallback; punkState: IUnknown): HResult; stdcall;
         function EndGetEvent(pResult: IMFAsyncResult; out ppEvent: IMFMediaEvent): HResult; stdcall;
-        function QueueEvent(met: TMediaEventType; guidExtendedType: TREFGUID; hrStatus: HRESULT;
-            const pvValue: PROPVARIANT): HResult; stdcall;
+        function QueueEvent(met: TMediaEventType; const guidExtendedType: TGUID; hrStatus: HRESULT;
+            const pvValue: TPROPVARIANT): HResult; stdcall;
     end;
 
 
@@ -735,7 +746,7 @@ type
 
     IMFByteStreamProxyClassFactory = interface(IUnknown)
         ['{a6b43f84-5c0a-42e8-a44d-b1857a76992f}']
-        function CreateByteStreamProxy(pByteStream: IMFByteStream; pAttributes: IMFAttributes;const  riid: TGUID;
+        function CreateByteStreamProxy(pByteStream: IMFByteStream; pAttributes: IMFAttributes; const riid: TGUID;
             out ppvObject: pointer): HResult; stdcall;
     end;
 
@@ -784,7 +795,7 @@ type
         function EndGetEvent(pResult: IMFAsyncResult; out ppEvent: IMFMediaEvent): HResult; stdcall;
         function QueueEvent(pEvent: IMFMediaEvent): HResult; stdcall;
         function QueueEventParamVar(met: TMediaEventType; const guidExtendedType: TGUID; hrStatus: HRESULT;
-            const pvValue: PROPVARIANT): HResult; stdcall;
+            const pvValue: TPROPVARIANT): HResult; stdcall;
         function QueueEventParamUnk(met: TMediaEventType; const guidExtendedType: TGUID; hrStatus: HRESULT;
             pUnk: IUnknown): HResult; stdcall;
         function Shutdown(): HResult; stdcall;
@@ -843,6 +854,48 @@ type
         function TestDevice(hDevice: THANDLE): HResult; stdcall;
         function UnlockDevice(hDevice: THANDLE; fSaveState: boolean): HResult; stdcall;
     end;
+
+    TMF_STREAM_STATE = (
+        MF_STREAM_STATE_STOPPED = 0,
+        MF_STREAM_STATE_PAUSED = (MF_STREAM_STATE_STOPPED + 1),
+        MF_STREAM_STATE_RUNNING = (MF_STREAM_STATE_PAUSED + 1)
+        );
+
+    //{$if (NTDDI_VERSION >= NTDDI_WIN10_RS2)}
+    IMFMuxStreamAttributesManager = interface(IUnknown)
+        ['{CE8BD576-E440-43B3-BE34-1E53F565F7E8}']
+        function GetStreamCount(out pdwMuxStreamCount: DWORD): HResult; stdcall;
+        function GetAttributes(dwMuxStreamIndex: DWORD; out ppStreamAttributes: IMFAttributes): HResult; stdcall;
+    end;
+
+
+    IMFMuxStreamMediaTypeManager = interface(IUnknown)
+        ['{505A2C72-42F7-4690-AEAB-8F513D0FFDB8}']
+        function GetStreamCount(out pdwMuxStreamCount: DWORD): HResult; stdcall;
+        function GetMediaType(dwMuxStreamIndex: DWORD; out ppMediaType: IMFMediaType): HResult; stdcall;
+        function GetStreamConfigurationCount(out pdwCount: DWORD): HResult; stdcall;
+        function AddStreamConfiguration(ullStreamMask: ULONGLONG): HResult; stdcall;
+        function RemoveStreamConfiguration(ullStreamMask: ULONGLONG): HResult; stdcall;
+        function GetStreamConfiguration(ulIndex: DWORD; out pullStreamMask: ULONGLONG): HResult; stdcall;
+    end;
+
+
+    IMFMuxStreamSampleManager = interface(IUnknown)
+        ['{74ABBC19-B1CC-4E41-BB8B-9D9B86A8F6CA}']
+        function GetStreamCount(out pdwMuxStreamCount: DWORD): HResult; stdcall;
+        function GetSample(dwMuxStreamIndex: DWORD; out ppSample: IMFSample): HResult; stdcall;
+        function GetStreamConfiguration(): ULONGLONG; stdcall;
+    end;
+//{$endif} // (WINVER >=_WIN32_WINNT_WIN10_RS2)
+
+
+
+
+
+
+
+
+
 
 
 function MFSerializeAttributesToStream(pAttr: IMFAttributes; dwOptions: DWORD; pStm: IStream): HResult; stdcall; external MFPlat_DLL;

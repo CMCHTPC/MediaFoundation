@@ -1,13 +1,42 @@
-unit CMC.MMReg;
+unit Win32.MMReg;
+
+//*@@@+++@@@@******************************************************************
+
+// Copyright (C) Microsoft Corporation. All rights reserved.
+
+// Multimedia Registration
+
+//*@@@---@@@@******************************************************************
+
+
+// Checked and Updated to SDK 10.0.17763.0
+// (c) Translation to Pascal by Norbert Sonnleitner
+
 {$IFDEF FPC}
 {$MODE delphi}
 {$ENDIF}
+
+
 
 interface
 
 uses
     Windows, Classes, SysUtils,
     CMC.MMEAPI;
+
+// Define the following to skip definitions
+
+// NOMMIDS      Multimedia IDs are not defined
+// NONEWWAVE    No new waveform types are defined except WAVEFORMATEX
+// NONEWRIFF    No new RIFF forms are defined
+// NOJPEGDIB    No JPEG DIB definitions
+// NONEWIC      No new Image Compressor types are defined
+// NOBITMAP     No extended bitmap info header definition
+
+ {$Z1}
+
+const
+    _INC_MMREG = 158;      // version * 100 + revision
 
 const
 
@@ -279,6 +308,7 @@ const
     MM_UNMAPPED = $FFFF; (* extensible MID mapping *)
 
     MM_PID_UNMAPPED = MM_UNMAPPED; (* extensible PID mapping *)
+
 
     (* MM_MICROSOFT product IDs *)
     MM_MIDI_MAPPER = 1; (* Midi Mapper *)
@@ -1929,37 +1959,37 @@ const
       plus new ones)
       *)
 
-    RIFFINFO_IARL = (ord('I')) or (ord('A') shl 8) or (ord('R') shl 16) or (ord('L') shl 24); (* Archival location *)
-    RIFFINFO_IART = (ord('I')) or (ord('A') shl 8) or (ord('R') shl 16) or (ord('T') shl 24); (* Artist *)
-    RIFFINFO_ICMS = (ord('I')) or (ord('C') shl 8) or (ord('M') shl 16) or (ord('S') shl 24); (* Commissioned *)
-    RIFFINFO_ICMT = (ord('I')) or (ord('C') shl 8) or (ord('M') shl 16) or (ord('T') shl 24); (* Comments *)
-    RIFFINFO_ICOP = (ord('I')) or (ord('C') shl 8) or (ord('O') shl 16) or (ord('P') shl 24); (* Copyright *)
-    RIFFINFO_ICRD = (ord('I')) or (ord('C') shl 8) or (ord('R') shl 16) or (ord('D') shl 24); (* Creation date of subject *)
-    RIFFINFO_ICRP = (ord('I')) or (ord('C') shl 8) or (ord('R') shl 16) or (ord('P') shl 24); (* Cropped *)
-    RIFFINFO_IDIM = (ord('I')) or (ord('D') shl 8) or (ord('I') shl 16) or (ord('M') shl 24); (* Dimensions *)
-    RIFFINFO_IDPI = (ord('I')) or (ord('D') shl 8) or (ord('P') shl 16) or (ord('I') shl 24); (* Dots per inch *)
-    RIFFINFO_IENG = (ord('I')) or (ord('E') shl 8) or (ord('N') shl 16) or (ord('G') shl 24); (* Engineer *)
-    RIFFINFO_IGNR = (ord('I')) or (ord('G') shl 8) or (ord('N') shl 16) or (ord('R') shl 24); (* Genre *)
-    RIFFINFO_IKEY = (ord('I')) or (ord('K') shl 8) or (ord('E') shl 16) or (ord('Y') shl 24); (* Keywords *)
-    RIFFINFO_ILGT = (ord('I')) or (ord('L') shl 8) or (ord('G') shl 16) or (ord('T') shl 24); (* Lightness settings *)
-    RIFFINFO_IMED = (ord('I')) or (ord('M') shl 8) or (ord('E') shl 16) or (ord('D') shl 24); (* Medium *)
-    RIFFINFO_INAM = (ord('I')) or (ord('N') shl 8) or (ord('A') shl 16) or (ord('M') shl 24); (* Name of subject *)
-    RIFFINFO_IPLT = (ord('I')) or (ord('P') shl 8) or (ord('L') shl 16) or (ord('T') shl 24); (* Palette Settings. No. of colors requested. *)
-    RIFFINFO_IPRD = (ord('I')) or (ord('P') shl 8) or (ord('R') shl 16) or (ord('D') shl 24); (* Product *)
-    RIFFINFO_ISBJ = (ord('I')) or (ord('S') shl 8) or (ord('B') shl 16) or (ord('J') shl 24); (* Subject description *)
-    RIFFINFO_ISFT = (ord('I')) or (ord('S') shl 8) or (ord('F') shl 16) or (ord('T') shl 24); (* Software. Name of package used to create file. *)
-    RIFFINFO_ISHP = (ord('I')) or (ord('S') shl 8) or (ord('H') shl 16) or (ord('P') shl 24); (* Sharpness. *)
-    RIFFINFO_ISRC = (ord('I')) or (ord('S') shl 8) or (ord('R') shl 16) or (ord('C') shl 24); (* Source. *)
-    RIFFINFO_ISRF = (ord('I')) or (ord('S') shl 8) or (ord('R') shl 16) or (ord('F') shl 24); (* Source Form. ie slide, paper *)
-    RIFFINFO_ITCH = (ord('I')) or (ord('T') shl 8) or (ord('C') shl 16) or (ord('H') shl 24); (* Technician who digitized the subject. *)
+    RIFFINFO_IARL = (Ord('I')) or (Ord('A') shl 8) or (Ord('R') shl 16) or (Ord('L') shl 24); (* Archival location *)
+    RIFFINFO_IART = (Ord('I')) or (Ord('A') shl 8) or (Ord('R') shl 16) or (Ord('T') shl 24); (* Artist *)
+    RIFFINFO_ICMS = (Ord('I')) or (Ord('C') shl 8) or (Ord('M') shl 16) or (Ord('S') shl 24); (* Commissioned *)
+    RIFFINFO_ICMT = (Ord('I')) or (Ord('C') shl 8) or (Ord('M') shl 16) or (Ord('T') shl 24); (* Comments *)
+    RIFFINFO_ICOP = (Ord('I')) or (Ord('C') shl 8) or (Ord('O') shl 16) or (Ord('P') shl 24); (* Copyright *)
+    RIFFINFO_ICRD = (Ord('I')) or (Ord('C') shl 8) or (Ord('R') shl 16) or (Ord('D') shl 24); (* Creation date of subject *)
+    RIFFINFO_ICRP = (Ord('I')) or (Ord('C') shl 8) or (Ord('R') shl 16) or (Ord('P') shl 24); (* Cropped *)
+    RIFFINFO_IDIM = (Ord('I')) or (Ord('D') shl 8) or (Ord('I') shl 16) or (Ord('M') shl 24); (* Dimensions *)
+    RIFFINFO_IDPI = (Ord('I')) or (Ord('D') shl 8) or (Ord('P') shl 16) or (Ord('I') shl 24); (* Dots per inch *)
+    RIFFINFO_IENG = (Ord('I')) or (Ord('E') shl 8) or (Ord('N') shl 16) or (Ord('G') shl 24); (* Engineer *)
+    RIFFINFO_IGNR = (Ord('I')) or (Ord('G') shl 8) or (Ord('N') shl 16) or (Ord('R') shl 24); (* Genre *)
+    RIFFINFO_IKEY = (Ord('I')) or (Ord('K') shl 8) or (Ord('E') shl 16) or (Ord('Y') shl 24); (* Keywords *)
+    RIFFINFO_ILGT = (Ord('I')) or (Ord('L') shl 8) or (Ord('G') shl 16) or (Ord('T') shl 24); (* Lightness settings *)
+    RIFFINFO_IMED = (Ord('I')) or (Ord('M') shl 8) or (Ord('E') shl 16) or (Ord('D') shl 24); (* Medium *)
+    RIFFINFO_INAM = (Ord('I')) or (Ord('N') shl 8) or (Ord('A') shl 16) or (Ord('M') shl 24); (* Name of subject *)
+    RIFFINFO_IPLT = (Ord('I')) or (Ord('P') shl 8) or (Ord('L') shl 16) or (Ord('T') shl 24); (* Palette Settings. No. of colors requested. *)
+    RIFFINFO_IPRD = (Ord('I')) or (Ord('P') shl 8) or (Ord('R') shl 16) or (Ord('D') shl 24); (* Product *)
+    RIFFINFO_ISBJ = (Ord('I')) or (Ord('S') shl 8) or (Ord('B') shl 16) or (Ord('J') shl 24); (* Subject description *)
+    RIFFINFO_ISFT = (Ord('I')) or (Ord('S') shl 8) or (Ord('F') shl 16) or (Ord('T') shl 24); (* Software. Name of package used to create file. *)
+    RIFFINFO_ISHP = (Ord('I')) or (Ord('S') shl 8) or (Ord('H') shl 16) or (Ord('P') shl 24); (* Sharpness. *)
+    RIFFINFO_ISRC = (Ord('I')) or (Ord('S') shl 8) or (Ord('R') shl 16) or (Ord('C') shl 24); (* Source. *)
+    RIFFINFO_ISRF = (Ord('I')) or (Ord('S') shl 8) or (Ord('R') shl 16) or (Ord('F') shl 24); (* Source Form. ie slide, paper *)
+    RIFFINFO_ITCH = (Ord('I')) or (Ord('T') shl 8) or (Ord('C') shl 16) or (Ord('H') shl 24); (* Technician who digitized the subject. *)
 
     (* New INFO Chunks as of August 30, 1993: *)
-    RIFFINFO_ISMP = (ord('I')) or (ord('S') shl 8) or (ord('M') shl 16) or (ord('P') shl 24); (* SMPTE time code *)
+    RIFFINFO_ISMP = (Ord('I')) or (Ord('S') shl 8) or (Ord('M') shl 16) or (Ord('P') shl 24); (* SMPTE time code *)
     (* ISMP: SMPTE time code of digitization start point expressed as a NULL terminated
       text string "HH:MM:SS:FF". If performing MCI capture in AVICAP, this
       chunk will be automatically set based on the MCI start time.
       *)
-    RIFFINFO_IDIT = (ord('I')) or (ord('D') shl 8) or (ord('I') shl 16) or (ord('T') shl 24); (* Digitization Time *)
+    RIFFINFO_IDIT = (Ord('I')) or (Ord('D') shl 8) or (Ord('I') shl 16) or (Ord('T') shl 24); (* Digitization Time *)
     (* IDIT: "Digitization Time" Specifies the time and date that the digitization commenced.
       The digitization time is contained in an ASCII string which
       contains exactly 26 characters and is in the format
@@ -1969,16 +1999,15 @@ const
       file based on the current system time at the moment capture is initiated.
       *)
 
-    RIFFINFO_ITRK = (ord('I')) or (ord('T') shl 8) or (ord('R') shl 16) or (ord('K') shl 24);
+    RIFFINFO_ITRK = (Ord('I')) or (Ord('T') shl 8) or (Ord('R') shl 16) or (Ord('K') shl 24);
     (* ASCIIZ representation of the 1-based track number of the content. *)
-    RIFFINFO_ITOC = (ord('I')) or (ord('T') shl 8) or (ord('O') shl 16) or (ord('C') shl 24);
+    RIFFINFO_ITOC = (Ord('I')) or (Ord('T') shl 8) or (Ord('O') shl 16) or (Ord('C') shl 24);
     (* A dump of the table of contents from the CD the content originated from. *)
 
     (* Template line for new additions *)
     (* RIFFINFO_I      =(ord('I')) or (ord( '') shl 8) or (ord( '') shl 16) or (ord( '') shl 24) *)
 
     (* ------------------------------------------------------------------------------ *)
-    { xxx }
 
     WAVE_FORMAT_PCM = 1;
 
@@ -2178,7 +2207,8 @@ const
     WAVE_FORMAT_NOKIA_MPEG_RAW_AAC = $1609; // Microsoft Corporation */
     WAVE_FORMAT_VODAFONE_MPEG_ADTS_AAC = $160A; // Microsoft Corporation */
     WAVE_FORMAT_VODAFONE_MPEG_RAW_AAC = $160B; // Microsoft Corporation */
-    WAVE_FORMAT_MPEG_HEAAC = $1610; // Microsoft Corporation (MPEG-2 AAC or MPEG-4 HE-AAC v1/v2 streams with any payload (ADTS, ADIF, LOAS/LATM, RAW). Format block includes MP4 AudioSpecificConfig() -- see HEAACWAVEFORMAT below */
+    WAVE_FORMAT_MPEG_HEAAC = $1610;
+    // Microsoft Corporation (MPEG-2 AAC or MPEG-4 HE-AAC v1/v2 streams with any payload (ADTS, ADIF, LOAS/LATM, RAW). Format block includes MP4 AudioSpecificConfig() -- see HEAACWAVEFORMAT below */
     WAVE_FORMAT_VOXWARE_RT24_SPEECH = $181C; // Voxware Inc. */
     WAVE_FORMAT_SONICFOUNDRY_LOSSLESS = $1971; // Sonic Foundry */
     WAVE_FORMAT_INNINGS_TELECOM_ADPCM = $1979; // Innings Telecom Inc. */
@@ -2195,6 +2225,7 @@ const
     WAVE_FORMAT_LEAD_SPEECH = $434C; // LEAD Technologies */
     WAVE_FORMAT_LEAD_VORBIS = $564C; // LEAD Technologies */
     WAVE_FORMAT_WAVPACK_AUDIO = $5756; // xiph.org */
+    WAVE_FORMAT_ALAC = $6C61; // Apple Lossless */
     WAVE_FORMAT_OGG_VORBIS_MODE_1 = $674F; // Ogg Vorbis */
     WAVE_FORMAT_OGG_VORBIS_MODE_2 = $6750; // Ogg Vorbis */
     WAVE_FORMAT_OGG_VORBIS_MODE_3 = $6751; // Ogg Vorbis */
@@ -2202,6 +2233,7 @@ const
     WAVE_FORMAT_OGG_VORBIS_MODE_2_PLUS = $6770; // Ogg Vorbis */
     WAVE_FORMAT_OGG_VORBIS_MODE_3_PLUS = $6771; // Ogg Vorbis */
     WAVE_FORMAT_3COM_NBX = $7000; // 3COM Corp. */
+    WAVE_FORMAT_OPUS = $704F; // Opus */
     WAVE_FORMAT_FAAD_AAC = $706D;
     WAVE_FORMAT_AMR_NB = $7361; // AMR Narrowband */
     WAVE_FORMAT_AMR_WB = $7362; // AMR Wideband */
@@ -2249,7 +2281,6 @@ const
 
     WAVE_FORMAT_EXTENSIBLE = $FFFE; // Microsoft */
 
-    //
     // New wave format development should be based on the
     // WAVEFORMATEXTENSIBLE structure. WAVEFORMATEXTENSIBLE allows you to
     // avoid having to register a new format tag with Microsoft. However, if
@@ -2257,7 +2288,7 @@ const
     // format tag can be used during the development phase of a new wave
     // format.  Before shipping, you MUST acquire an official format tag from
     // Microsoft.
-    //
+
     WAVE_FORMAT_DEVELOPMENT = ($FFFF);
 
     // Speaker Positions for dwChannelMask in WAVEFORMATEXTENSIBLE:
@@ -2287,39 +2318,37 @@ const
     SPEAKER_ALL = $80000000;
 
     (* ------------------------------------------------------------------------------ *)
-    //
+    // New RIFF WAVE Chunks
+    RIFFWAVE_inst = (Ord('i')) or (Ord('n') shl 8) or (Ord('s') shl 16) or (Ord('t') shl 24);
+
     // New RIFF Forms
-    //
 
     (* RIFF AVI *)
-
-    //
     // AVI file format is specified in a seperate file (AVIFMT.H),
     // which is available in the VfW and Win 32 SDK
-    //
 
     (* RIFF CPPO *)
 
-    RIFFCPPO = (ord('C')) or (ord('P') shl 8) or (ord('P') shl 16) or (ord('O') shl 24);
+    RIFFCPPO = (Ord('C')) or (Ord('P') shl 8) or (Ord('P') shl 16) or (Ord('O') shl 24);
 
-    RIFFCPPO_objr = (ord('o')) or (ord('b') shl 8) or (ord('j') shl 16) or (ord('r') shl 24);
-    RIFFCPPO_obji = (ord('o')) or (ord('b') shl 8) or (ord('j') shl 16) or (ord('i') shl 24);
+    RIFFCPPO_objr = (Ord('o')) or (Ord('b') shl 8) or (Ord('j') shl 16) or (Ord('r') shl 24);
+    RIFFCPPO_obji = (Ord('o')) or (Ord('b') shl 8) or (Ord('j') shl 16) or (Ord('i') shl 24);
 
-    RIFFCPPO_clsr = (ord('c')) or (ord('l') shl 8) or (ord('s') shl 16) or (ord('r') shl 24);
-    RIFFCPPO_clsi = (ord('c')) or (ord('l') shl 8) or (ord('s') shl 16) or (ord('i') shl 24);
+    RIFFCPPO_clsr = (Ord('c')) or (Ord('l') shl 8) or (Ord('s') shl 16) or (Ord('r') shl 24);
+    RIFFCPPO_clsi = (Ord('c')) or (Ord('l') shl 8) or (Ord('s') shl 16) or (Ord('i') shl 24);
 
-    RIFFCPPO_mbr = (ord('m')) or (ord('b') shl 8) or (ord('r') shl 16) or (ord(' ') shl 24);
+    RIFFCPPO_mbr = (Ord('m')) or (Ord('b') shl 8) or (Ord('r') shl 16) or (Ord(' ') shl 24);
 
-    RIFFCPPO_char = (ord('c')) or (ord('h') shl 8) or (ord('a') shl 16) or (ord('r') shl 24);
+    RIFFCPPO_char = (Ord('c')) or (Ord('h') shl 8) or (Ord('a') shl 16) or (Ord('r') shl 24);
 
-    RIFFCPPO_byte = (ord('b')) or (ord('y') shl 8) or (ord('t') shl 16) or (ord('e') shl 24);
-    RIFFCPPO_int = (ord('i')) or (ord('n') shl 8) or (ord('t') shl 16) or (ord(' ') shl 24);
-    RIFFCPPO_word = (ord('w')) or (ord('o') shl 8) or (ord('r') shl 16) or (ord('d') shl 24);
-    RIFFCPPO_long = (ord('l')) or (ord('o') shl 8) or (ord('n') shl 16) or (ord('g') shl 24);
-    RIFFCPPO_dwrd = (ord('d')) or (ord('w') shl 8) or (ord('r') shl 16) or (ord('d') shl 24);
-    RIFFCPPO_flt = (ord('f')) or (ord('l') shl 8) or (ord('t') shl 16) or (ord(' ') shl 24);
-    RIFFCPPO_dbl = (ord('d')) or (ord('b') shl 8) or (ord('l') shl 16) or (ord(' ') shl 24);
-    RIFFCPPO_str = (ord('s')) or (ord('t') shl 8) or (ord('r') shl 16) or (ord(' ') shl 24);
+    RIFFCPPO_byte = (Ord('b')) or (Ord('y') shl 8) or (Ord('t') shl 16) or (Ord('e') shl 24);
+    RIFFCPPO_int = (Ord('i')) or (Ord('n') shl 8) or (Ord('t') shl 16) or (Ord(' ') shl 24);
+    RIFFCPPO_word = (Ord('w')) or (Ord('o') shl 8) or (Ord('r') shl 16) or (Ord('d') shl 24);
+    RIFFCPPO_long = (Ord('l')) or (Ord('o') shl 8) or (Ord('n') shl 16) or (Ord('g') shl 24);
+    RIFFCPPO_dwrd = (Ord('d')) or (Ord('w') shl 8) or (Ord('r') shl 16) or (Ord('d') shl 24);
+    RIFFCPPO_flt = (Ord('f')) or (Ord('l') shl 8) or (Ord('t') shl 16) or (Ord(' ') shl 24);
+    RIFFCPPO_dbl = (Ord('d')) or (Ord('b') shl 8) or (Ord('l') shl 16) or (Ord(' ') shl 24);
+    RIFFCPPO_str = (Ord('s')) or (Ord('t') shl 8) or (Ord('r') shl 16) or (Ord(' ') shl 24);
 
     ACM_MPEG_LAYER1 = ($0001);
     ACM_MPEG_LAYER2 = ($0002);
@@ -2344,33 +2373,30 @@ const
     MPEGLAYER3_FLAG_PADDING_ON = $00000001;
     MPEGLAYER3_FLAG_PADDING_OFF = $00000002;
 
-    //
     // MPEG Layer3 WAVEFORMATEX structure
     // for WAVE_FORMAT_MPEGLAYER3 ($0055)
-    //
+
     MPEGLAYER3_WFX_EXTRA_BYTES = 12;
 
-
-    //
     // Windows Media Audio (common)
-    //
-    //
-
     MM_MSFT_ACM_WMAUDIO = 39;
 
     WMAUDIO_BITS_PER_SAMPLE = 16; // just an uncompressed size...
     WMAUDIO_MAX_CHANNELS = 2;
 
-    //
     // Windows Media Audio V1 (a.k.a. "MSAudio")
-    //
     // for WAVE_FORMAT_MSAUDIO1        ($0160)
-    //
-    //
     MM_MSFT_ACM_MSAUDIO1 = 39;
 
+    // Windows Media Audio V2
+    // for WAVE_FORMAT_WMAUDIO2        ($0161)
     MM_MSFT_ACM_WMAUDIO2 = 101;
 
+    //  Windows Media Audio V3
+    //  for WAVE_FORMAT_WMAUDIO3        ($0162)
+
+
+    //  ACM Wave Filters
     WAVE_FILTER_UNKNOWN = $0000;
     WAVE_FILTER_DEVELOPMENT = ($FFFF);
     WAVE_FILTER_VOLUME = $0001;
@@ -2382,10 +2408,8 @@ const
 
     (*
       //////////////////////////////////////////////////////////////////////////
-      //
       // DIB Compression Defines
-      //
-      *)
+    *)
 
     BI_BITFIELDS = 3;
 
@@ -2396,14 +2420,13 @@ const
     QDI_STRETCHDIB = $0008;
 
     (* New DIB Compression Defines *)
-
-    BICOMP_IBMULTIMOTION = (ord('U')) or (ord('L') shl 8) or (ord('T') shl 16) or (ord('I') shl 24);
-    BICOMP_IBMPHOTOMOTION = (ord('P')) or (ord('H') shl 8) or (ord('M') shl 16) or (ord('O') shl 24);
-    BICOMP_CREATIVEYUV = (ord('c')) or (ord('y') shl 8) or (ord('u') shl 16) or (ord('v') shl 24);
+    BICOMP_IBMULTIMOTION = (Ord('U')) or (Ord('L') shl 8) or (Ord('T') shl 16) or (Ord('I') shl 24);
+    BICOMP_IBMPHOTOMOTION = (Ord('P')) or (Ord('H') shl 8) or (Ord('M') shl 16) or (Ord('O') shl 24);
+    BICOMP_CREATIVEYUV = (Ord('c')) or (Ord('y') shl 8) or (Ord('u') shl 16) or (Ord('v') shl 24);
 
     (* New DIB Compression Defines *)
-    JPEG_DIB = (ord('J')) or (ord('P') shl 8) or (ord('E') shl 16) or (ord('G') shl 24); (* Still image JPEG DIB biCompression *)
-    MJPG_DIB = (ord('M')) or (ord('J') shl 8) or (ord('P') shl 16) or (ord('G') shl 24); (* Motion JPEG DIB biCompression *)
+    JPEG_DIB = (Ord('J')) or (Ord('P') shl 8) or (Ord('E') shl 16) or (Ord('G') shl 24); (* Still image JPEG DIB biCompression *)
+    MJPG_DIB = (Ord('M')) or (Ord('J') shl 8) or (Ord('P') shl 16) or (Ord('G') shl 24); (* Motion JPEG DIB biCompression *)
 
     (* JPEGProcess Definitions *)
     JPEG_PROCESS_BASELINE = 0; (* Baseline DCT *)
@@ -2477,6 +2500,51 @@ const
     JPEG_YCbCr = 2; (* YCbCr as define by CCIR 601 *)
     JPEG_RGB = 3; (* 3 component RGB *)
 
+    ICTYPE_VIDEO = (Ord('v')) or (Ord('i') shl 8) or (Ord('d') shl 16) or (Ord('c') shl 24);
+    ICTYPE_AUDIO = (Ord('a')) or (Ord('u') shl 8) or (Ord('d') shl 16) or (Ord('c') shl 24);
+
+
+(* Sierra Semiconductor: RDSP- Proprietary RIFF file format
+//       for the storage and downloading of DSP
+//       code for Audio and communications devices.
+*)
+    FOURCC_RDSP = (Ord('R')) or (Ord('D') shl 8) or (Ord('S') shl 16) or (Ord('P') shl 24);
+
+
+    (* Default DHT Segment *)
+
+    MJPGDHTSeg: array [0..$1A4 - 1] of byte = (
+        (* JPEG DHT Segment for YCrCb omitted from MJPG data *)
+        $FF, $C4, $01, $A2,
+        $00, $00, $01, $05, $01, $01, $01, $01, $01, $01, $00, $00, $00, $00, $00, $00, $00, $00,
+        $01, $02, $03, $04, $05, $06, $07, $08, $09, $0A, $0B, $01, $00, $03, $01, $01, $01, $01,
+        $01, $01, $01, $01, $01, $00, $00, $00, $00, $00, $00, $01, $02, $03, $04, $05, $06, $07,
+        $08, $09, $0A, $0B, $10, $00, $02, $01, $03, $03, $02, $04, $03, $05, $05, $04, $04, $00,
+        $00, $01, $7D, $01, $02, $03, $00, $04, $11, $05, $12, $21, $31, $41, $06, $13, $51, $61,
+        $07, $22, $71, $14, $32, $81, $91, $A1, $08, $23, $42, $B1, $C1, $15, $52, $D1, $F0, $24,
+        $33, $62, $72, $82, $09, $0A, $16, $17, $18, $19, $1A, $25, $26, $27, $28, $29, $2A, $34,
+        $35, $36, $37, $38, $39, $3A, $43, $44, $45, $46, $47, $48, $49, $4A, $53, $54, $55, $56,
+        $57, $58, $59, $5A, $63, $64, $65, $66, $67, $68, $69, $6A, $73, $74, $75, $76, $77, $78,
+        $79, $7A, $83, $84, $85, $86, $87, $88, $89, $8A, $92, $93, $94, $95, $96, $97, $98, $99,
+        $9A, $A2, $A3, $A4, $A5, $A6, $A7, $A8, $A9, $AA, $B2, $B3, $B4, $B5, $B6, $B7, $B8, $B9,
+        $BA, $C2, $C3, $C4, $C5, $C6, $C7, $C8, $C9, $CA, $D2, $D3, $D4, $D5, $D6, $D7, $D8, $D9,
+        $DA, $E1, $E2, $E3, $E4, $E5, $E6, $E7, $E8, $E9, $EA, $F1, $F2, $F3, $F4, $F5, $F6, $F7,
+        $F8, $F9, $FA, $11, $00, $02, $01, $02, $04, $04, $03, $04, $07, $05, $04, $04, $00, $01,
+        $02, $77, $00, $01, $02, $03, $11, $04, $05, $21, $31, $06, $12, $41, $51, $07, $61, $71,
+        $13, $22, $32, $81, $08, $14, $42, $91, $A1, $B1, $C1, $09, $23, $33, $52, $F0, $15, $62,
+        $72, $D1, $0A, $16, $24, $34, $E1, $25, $F1, $17, $18, $19, $1A, $26, $27, $28, $29, $2A,
+        $35, $36, $37, $38, $39, $3A, $43, $44, $45, $46, $47, $48, $49, $4A, $53, $54, $55, $56,
+        $57, $58, $59, $5A, $63, $64, $65, $66, $67, $68, $69, $6A, $73, $74, $75, $76, $77, $78,
+        $79, $7A, $82, $83, $84, $85, $86, $87, $88, $89, $8A, $92, $93, $94, $95, $96, $97, $98,
+        $99, $9A, $A2, $A3, $A4, $A5, $A6, $A7, $A8, $A9, $AA, $B2, $B3, $B4, $B5, $B6, $B7, $B8,
+        $B9, $BA, $C2, $C3, $C4, $C5, $C6, $C7, $C8, $C9, $CA, $D2, $D3, $D4, $D5, $D6, $D7, $D8,
+        $D9, $DA, $E2, $E3, $E4, $E5, $E6, $E7, $E8, $E9, $EA, $F2, $F3, $F4, $F5, $F6, $F7, $F8,
+        $F9, $FA);
+
+    KSDATAFORMAT_SUBTYPE_PCM: TGUID = '{00000001-0000-0010-8000-00aa00389b71}';
+    KSDATAFORMAT_SUBTYPE_IEEE_FLOAT: TGUID = '{00000003-0000-0010-8000-00aa00389b71}';
+    KSDATAFORMAT_SUBTYPE_WAVEFORMATEX: TGUID = '{00000000-0000-0010-8000-00aa00389b71}';
+
 type
 {$Z1}
 {$A1}
@@ -2485,11 +2553,11 @@ type
 
     (* general waveform format structure (information common to all formats) *)
     Twaveformat_tag = record
-        wFormatTag: WORD; (* format type *)
-        nChannels: WORD; (* number of channels (i.e. mono, stereo...) *)
+        wFormatTag: word; (* format type *)
+        nChannels: word; (* number of channels (i.e. mono, stereo...) *)
         nSamplesPerSec: DWORD; (* sample rate *)
         nAvgBytesPerSec: DWORD; (* for buffer estimation *)
-        nBlockAlign: WORD; (* block size of data *)
+        nBlockAlign: word; (* block size of data *)
     end;
 
     TWAVEFORMAT = Twaveformat_tag;
@@ -2499,7 +2567,7 @@ type
     (* specific waveform format structure for PCM data *)
     TPCMWAVEFORMAT = record
         wf: TWAVEFORMAT;
-        wBitsPerSample: WORD;
+        wBitsPerSample: word;
     end;
 
     PPCMWAVEFORMAT = ^TPCMWAVEFORMAT;
@@ -2510,59 +2578,51 @@ type
       *)
 
     TWAVEFORMATEX = record
-        wFormatTag: WORD; (* format type *)
-        nChannels: WORD; (* number of channels (i.e. mono, stereo...) *)
+        wFormatTag: word; (* format type *)
+        nChannels: word; (* number of channels (i.e. mono, stereo...) *)
         nSamplesPerSec: DWORD; (* sample rate *)
         nAvgBytesPerSec: DWORD; (* for buffer estimation *)
-        nBlockAlign: WORD; (* block size of data *)
-        wBitsPerSample: WORD; (* Number of bits per sample of mono data *)
-        cbSize: WORD; (* The count in bytes of the size of
-          extra information (after cbSize) *)
+        nBlockAlign: word; (* block size of data *)
+        wBitsPerSample: word; (* Number of bits per sample of mono data *)
+        cbSize: word; (* The count in bytes of the size of  extra information (after cbSize) *)
     end;
 
     PWAVEFORMATEX = ^TWAVEFORMATEX;
 
 
-
-
-    //
     // New wave format development should be based on the
     // WAVEFORMATEXTENSIBLE structure. WAVEFORMATEXTENSIBLE allows you to
     // avoid having to register a new format tag with Microsoft. Simply
     // define a new GUID value for the WAVEFORMATEXTENSIBLE.SubFormat field
     // and use WAVE_FORMAT_EXTENSIBLE in the
     // WAVEFORMATEXTENSIBLE.Format.wFormatTag field.
-    //
+
 
     TWAVEFORMATEXTENSIBLE = record
         Format: TWAVEFORMATEX;
-        case Integer of
-            0:
-                (wValidBitsPerSample: WORD; (* bits of precision *)
-                    dwChannelMask: DWORD; (* which channels are *)
-                    SubFormat: TGUID; );
-            1:
-                (wSamplesPerBlock: WORD); (* valid if wBitsPerSample==0 *)
-            2:
-                (wReserved: WORD); (* If neither applies, set to zero. *)
+        case integer of
+            0: (wValidBitsPerSample: word; (* bits of precision *)
+                dwChannelMask: DWORD; (* which channels are *)
+                SubFormat: TGUID);
+            1: (wSamplesPerBlock: word); (* valid if wBitsPerSample==0 *)
+            2: (wReserved: word); (* If neither applies, set to zero. *)
         (* present in stream *)
 
     end;
 
     PWAVEFORMATEXTENSIBLE = ^TWAVEFORMATEXTENSIBLE;
 
-    //
     // Extended PCM waveform format structure based on WAVEFORMATEXTENSIBLE.
     // Use this for multiple channel and hi-resolution PCM data
-    //
+
     TWAVEFORMATPCMEX = TWAVEFORMATEXTENSIBLE; (* Format.cbSize = 22 *)
     PWAVEFORMATPCMEX = ^TWAVEFORMATPCMEX;
 
-    //
+
     // Extended format structure using IEEE Float data and based
     // on WAVEFORMATEXTENSIBLE.  Use this for multiple channel
     // and hi-resolution PCM data in IEEE floating point format.
-    //
+
     TWAVEFORMATIEEEFLOATEX = TWAVEFORMATEXTENSIBLE; (* Format.cbSize = 22 *)
     PWAVEFORMATIEEEFLOATEX = ^TWAVEFORMATIEEEFLOATEX;
 
@@ -2584,53 +2644,42 @@ type
 
     TADPCMWAVEFORMAT = record
         wfx: TWAVEFORMATEX;
-        wSamplesPerBlock: WORD;
-        wNumCoef: WORD;
-
+        wSamplesPerBlock: word;
+        wNumCoef: word;
         aCoef: PADPCMCOEFSET;
     end;
 
     PADPCMWAVEFORMAT = ^TADPCMWAVEFORMAT;
 
-    //
+
     // Microsoft's DRM structure definitions
-    //
+
     TDRMWAVEFORMAT = packed record
         wfx: TWAVEFORMATEX;
-        wReserved: WORD;
+        wReserved: word;
         ulContentId: ULONG;
         wfxSecure: TWAVEFORMATEX;
     end;
 
     PDRMWAVEFORMAT = ^TDRMWAVEFORMAT;
 
-
-    //
     // Intel's DVI ADPCM structure definitions
-    //
     // for WAVE_FORMAT_DVI_ADPCM   ($0011)
-    //
-    //
 
     TDVIADPCMWAVEFORMAT = packed record
         wfx: TWAVEFORMATEX;
-        wSamplesPerBlock: WORD;
+        wSamplesPerBlock: word;
     end;
 
     PDVIADPCMWAVEFORMAT = ^TDVIADPCMWAVEFORMAT;
 
-
-    //
     // IMA endorsed ADPCM structure definitions--note that this is exactly
     // the same format as Intel's DVI ADPCM.
-    //
     // for WAVE_FORMAT_IMA_ADPCM   ($0011)
-    //
-    //
 
     TIMAADPCMWAVEFORMAT = packed record
         wfx: TWAVEFORMATEX;
-        wSamplesPerBlock: WORD;
+        wSamplesPerBlock: word;
     end;
 
     PIMAADPCMWAVEFORMAT = ^TIMAADPCMWAVEFORMAT;
@@ -2643,48 +2692,36 @@ type
       *)
     TMEDIASPACEADPCMWAVEFORMAT = packed record
         wfx: TWAVEFORMATEX;
-        wRevision: WORD;
+        wRevision: word;
     end;
 
     PMEDIASPACEADPCMWAVEFORMAT = ^TMEDIASPACEADPCMWAVEFORMAT;
 
-    //
+
     // Sierra Semiconductor
-    //
     // for WAVE_FORMAT_SIERRA_ADPCM   ($0013)
-    //
-    //
 
     TSIERRAADPCMWAVEFORMAT = record
         wfx: TWAVEFORMATEX;
-        wRevision: WORD;
+        wRevision: word;
     end;
 
     PSIERRAADPCMWAVEFORMAT = ^TSIERRAADPCMWAVEFORMAT;
 
 
-    //
     // Antex Electronics  structure definitions
-    //
     // for WAVE_FORMAT_G723_ADPCM   ($0014)
-    //
-    //
 
     TG723_ADPCMWAVEFORMAT = record
         wfx: TWAVEFORMATEX;
-        cbExtraSize: WORD;
-        nAuxBlockSize: WORD;
+        cbExtraSize: word;
+        nAuxBlockSize: word;
     end;
 
     PG723_ADPCMWAVEFORMAT = ^TG723_ADPCMWAVEFORMAT;
 
-
-    //
     // DSP Solutions (formerly DIGISPEECH) structure definitions
-    //
     // for WAVE_FORMAT_DIGISTD   ($0015)
-    //
-    //
 
     TDIGISTDWAVEFORMAT = record
         wfx: TWAVEFORMATEX;
@@ -2692,13 +2729,8 @@ type
 
     PDIGISTDWAVEFORMAT = ^TDIGISTDWAVEFORMAT;
 
-
-    //
     // DSP Solutions (formerly DIGISPEECH) structure definitions
-    //
     // for WAVE_FORMAT_DIGIFIX   ($0016)
-    //
-    //
 
     TDIGIFIXWAVEFORMAT = record
         wfx: TWAVEFORMATEX;
@@ -2706,69 +2738,48 @@ type
 
     PDIGIFIXWAVEFORMAT = ^TDIGIFIXWAVEFORMAT;
 
-    //
     // Dialogic Corporation
     // WAVEFORMAT_DIALOGIC_OKI_ADPCM   ($0017)
-    //
+
     TDIALOGICOKIADPCMWAVEFORMAT = record
         ewf: TWAVEFORMATEX;
     end;
 
     PDIALOGICOKIADPCMWAVEFORMAT = ^TDIALOGICOKIADPCMWAVEFORMAT;
 
-
-    //
     // Yamaha Compression's ADPCM structure definitions
-    //
     // for WAVE_FORMAT_YAMAHA_ADPCM   ($0020)
-    //
-    //
 
     TYAMAHA_ADPCMWAVEFORMAT = record
         wfx: TWAVEFORMATEX;
-
     end;
 
     PYAMAHA_ADPCMWAVEFORMAT = ^TYAMAHA_ADPCMWAVEFORMAT;
 
-    //
     // Speech Compression's Sonarc structure definitions
-    //
     // for WAVE_FORMAT_SONARC   ($0021)
-    //
-    //
 
     TSONARCWAVEFORMAT = record
         wfx: TWAVEFORMATEX;
-        wCompType: WORD;
+        wCompType: word;
     end;
 
     PSONARCWAVEFORMAT = ^TSONARCWAVEFORMAT;
 
-
-    //
     // DSP Groups's TRUESPEECH structure definitions
-    //
     // for WAVE_FORMAT_DSPGROUP_TRUESPEECH   ($0022)
-    //
-    //
 
     TTRUESPEECHWAVEFORMAT = record
         wfx: TWAVEFORMATEX;
-        wRevision: WORD;
-        nSamplesPerBlock: WORD;
-        abReserved: array [0 .. 27] of BYTE;
+        wRevision: word;
+        nSamplesPerBlock: word;
+        abReserved: array [0 .. 27] of byte;
     end;
 
     PTRUESPEECHWAVEFORMAT = ^TTRUESPEECHWAVEFORMAT;
 
-
-    //
     // Echo Speech Corp structure definitions
-    //
     // for WAVE_FORMAT_ECHOSC1   ($0023)
-    //
-    //
 
     TECHOSC1WAVEFORMAT = record
         wfx: TWAVEFORMATEX;
@@ -2776,13 +2787,8 @@ type
 
     PECHOSC1WAVEFORMAT = ^TECHOSC1WAVEFORMAT;
 
-
-    //
     // Audiofile Inc.structure definitions
-    //
     // for WAVE_FORMAT_AUDIOFILE_AF36   ($0024)
-    //
-    //
 
     TAUDIOFILE_AF36WAVEFORMAT = record
         wfx: TWAVEFORMATEX;
@@ -2790,27 +2796,17 @@ type
 
     PAUDIOFILE_AF36WAVEFORMAT = ^TAUDIOFILE_AF36WAVEFORMAT;
 
-    //
     // Audio Processing Technology structure definitions
-    //
     // for WAVE_FORMAT_APTX   ($0025)
-    //
-    //
+
     TAPTXWAVEFORMAT = record
         wfx: TWAVEFORMATEX;
     end;
 
     PAPTXWAVEFORMAT = ^TAPTXWAVEFORMAT;
 
-
-
-
-    //
     // Audiofile Inc.structure definitions
-    //
     // for WAVE_FORMAT_AUDIOFILE_AF10   ($0026)
-    //
-    //
 
     TAUDIOFILE_AF10WAVEFORMAT = record
         wfx: TWAVEFORMATEX;
@@ -2818,128 +2814,624 @@ type
 
     PAUDIOFILE_AF10WAVEFORMAT = ^TAUDIOFILE_AF10WAVEFORMAT;
 
-    //
     (* Dolby's AC-2 wave format structure definition
       WAVE_FORMAT_DOLBY_AC2    ($0030) *)
-    //
+
     TDOLBYAC2WAVEFORMAT = record
         wfx: TWAVEFORMATEX;
-        nAuxBitsCode: WORD;
+        nAuxBitsCode: word;
     end;
 
     PDOLBYAC2WAVEFORMAT = ^TDOLBYAC2WAVEFORMAT;
 
     (* Microsoft's *)
     // WAVE_FORMAT_GSM 610           $0031
-    //
+
     TGSM610WAVEFORMAT = record
         wfx: TWAVEFORMATEX;
-        wSamplesPerBlock: WORD;
+        wSamplesPerBlock: word;
     end;
 
     PGSM610WAVEFORMAT = ^TGSM610WAVEFORMAT;
 
-
-
-
-    //
     // Antex Electronics Corp
-    //
     // for WAVE_FORMAT_ADPCME                  ($0033)
-    //
-    //
 
     TADPCMEWAVEFORMAT = record
         wfx: TWAVEFORMATEX;
-        wSamplesPerBlock: WORD;
+        wSamplesPerBlock: word;
     end;
 
     PADPCMEWAVEFORMAT = ^TADPCMEWAVEFORMAT;
 
     (* Control Resources Limited *)
     // WAVE_FORMAT_CONTROL_RES_VQLPC                 $0034
-    //
+
     TCONTRESVQLPCWAVEFORMAT = record
         wfx: TWAVEFORMATEX;
-        wSamplesPerBlock: WORD;
+        wSamplesPerBlock: word;
     end;
 
     PCONTRESVQLPCWAVEFORMAT = ^TCONTRESVQLPCWAVEFORMAT;
 
-    //
-    //
-    //
     // for WAVE_FORMAT_DIGIREAL                   ($0035)
-    //
-    //
 
     TDIGIREALWAVEFORMAT = record
         wfx: TWAVEFORMATEX;
-        wSamplesPerBlock: WORD;
+        wSamplesPerBlock: word;
     end;
 
     PDIGIREALWAVEFORMAT = ^TDIGIREALWAVEFORMAT;
 
-    //
     // DSP Solutions
-    //
     // for WAVE_FORMAT_DIGIADPCM   ($0036)
-    //
-    //
 
     TDIGIADPCMWAVEFORMAT = record
         wfx: TWAVEFORMATEX;
-        wSamplesPerBlock: WORD;
+        wSamplesPerBlock: word;
     end;
 
     PDIGIADPCMWAVEFORMAT = ^TDIGIADPCMWAVEFORMAT;
 
     (* Control Resources Limited *)
     // WAVE_FORMAT_CONTROL_RES_CR10          $0037
-    //
+
     TCONTRESCR10WAVEFORMAT = record
         wfx: TWAVEFORMATEX;
-        wSamplesPerBlock: WORD;
+        wSamplesPerBlock: word;
     end;
 
     PCONTRESCR10WAVEFORMAT = ^TCONTRESCR10WAVEFORMAT;
+
+    //  Natural Microsystems
+    //      for WAVE_FORMAT_NMS_VBXADPCM   ($0038)
+
+    TNMS_VBXADPCMWAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+        wSamplesPerBlock: word;
+    end;
+
+    PNMS_VBXADPCMWAVEFORMAT = ^TNMS_VBXADPCMWAVEFORMAT;
+
+    //  Antex Electronics  structure definitions
+    //      for WAVE_FORMAT_G721_ADPCM   ($0040)
+
+    TG721_ADPCMWAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+        nAuxBlockSize: word;
+    end;
+    PG721_ADPCMWAVEFORMAT = ^TG721_ADPCMWAVEFORMAT;
+
+
+    // Microsoft MPEG audio WAV definition
+    (*  MPEG-1 audio wave format (audio layer only).   ($0050)   *)
+    TMPEG1WAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+        fwHeadLayer: word;
+        dwHeadBitrate: DWORD;
+        fwHeadMode: word;
+        fwHeadModeExt: word;
+        wHeadEmphasis: word;
+        fwHeadFlags: word;
+        dwPTSLow: DWORD;
+        dwPTSHigh: DWORD;
+    end;
+    PMPEG1WAVEFORMAT = ^TMPEG1WAVEFORMAT;
+
+
+    // WAVE_FORMAT_MPEGLAYER3 format sructure
+    TMPEGLAYER3WAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+        wID: word;
+        fdwFlags: DWORD;
+        nBlockSize: word;
+        nFramesPerBlock: word;
+        nCodecDelay: word;
+    end;
+
+    PMPEGLAYER3WAVEFORMAT = ^TMPEGLAYER3WAVEFORMAT;
+
+
+(* ==========================================================================
+
+      For WAVE_FORMAT_MPEG_HEAAC ($1610)
+
+
+ "MPEG-2" in the comments below refers to ISO/IEC 13818-7 (MPEG-2 AAC spec).
+ "MPEG-4" in the comments below refers to ISO/IEC 14496-3 (MPEG-4 Audio spec).
+
+ The following defines the format block to be used for MPEG-2 AAC or MPEG-4 HE-AAC v1/v2 streams.
+ When setting media type attributes in Media Foundation (MF) objects, this will appear in conjunction with
+ major type MFMediaType_Audio and sub type MFAudioFormat_AAC (=MEDIASUBTYPE_MPEG_HEAAC).
+ The format block structure HEAACWAVEFORMAT is defined below.  It starts with the structure
+ HEAACWAVEINFO (which is an extension of WAVEFORMATEX), followed by AudioSpecificConfig() as
+ defined by ISO/IEC 14496-3 (MPEG-4 audio). Since the length of AudioSpecificConfig() may vary
+ from one stream to another, this is a variable size format block.
+
+ The WAVEFORMATEX fields describe the properties of the core AAC stream,
+ without SBR/PS extensions (if exists). This is the description of the WAVEFORMATEX fields:
+
+ wfx.wFormatTag - Set this to WAVE_FORMAT_MPEG_HEAAC ($1610).
+
+ wfx.nChannels - Total number of channels in core AAC stream (including LFE if exists).
+ This might be different than the decoded number of channels if the MPEG-4 Parametric Stereo (PS)
+ tool exists. If unknown, set to zero.
+
+ wfx.nSamplesPerSec - Sampling rate of core AAC stream. This will be one of the 12 supported
+ sampling rate between 8000 and 96000 Hz, as defined in MPEG-2.  This might be different than
+ the decoded sampling rate if the MPEG-4 Spectral Band Replication (SBR) tool exists.
+ If not know in advance, the sampling rate can be extracted from:
+ - the 4-bit sampling_frequency_index field in adts_fixed_header(), or
+ - program_config_element() in adif_header for MPEG-2 streams, or
+ - the 4-bit samplingFrequencyIndex field in AudioSpecificConfig() for MPEG-4 streams.
+
+ wfx.nAvgBytesPerSec - The average bytes per second calculated based on the average bit rate of
+ the compressed stream. This value may be used by parsers to seek into a particular time offset
+ in the stream. It may also be used by applications to determine roughly how much buffer length to allocate.
+ If this is not known in advance, this value can be estimated by parsing some (or all) of the
+ compressed HE-AAC frames and calculating bit rate based on average compressed frame size.
+ If unknown, set to zero.
+
+ wfx.nBlockAlign - Set this to 1.
+
+ wfx.wBitsPerSample - Desired bit depth of the decoded PCM. If unknown, set to zero.
+
+ wfx.cbSize - Set this to 12 (=sizeof(HEAACWAVEINFO)-sizeof(WAVEFORMATEX)) plus the
+ size of AudioSpecificConfig() in bytes.
+
+ ===================================
+
+ How do we parse this format block? assume pbBuff is the address of the first
+ byte in the format block. We do the following:
+
+ HEAACWAVEINFO* pwfInfo = (HEAACWAVEINFO* )pbBuff;
+
+ if ( 0 == pwfInfo->wStructType)
+ {
+    HEAACWAVEFORMAT* pwf = (HEAACWAVEFORMAT* )pbBuff;
+
+    // All HEAACWAVEFORMAT fields can now be accessed through pwf
+    // ...
+
+    //
+    // To parse AudioSpecifiConfig(), write a function such as
+    // ParseAudioSpecificConfig(BYTE *pbASC, DWORD dwASCLen),
+    // and call:
+    //
+    DWORD dwASCLen = pwf->wfInfo.wfx.cbSize - sizeof(HEAACWAVEINFO) + sizeof(WAVEFORMATEX);
+
+    ParseAudioSpecificConfig(pwf->pbAudioSpecificConfig, dwASCLen);
+ }
+ else
+ {
+    // Reserved
+ }
+*)
+
+    THEAACWAVEINFO = record
+        // Defines core AAC properties. See description above. WAVEFORMATEX is of size 18 bytes.
+        wfx: TWAVEFORMATEX;
+
+        // Defines the payload type
+        // 0-RAW.  The stream contains raw_data_block() elements only.
+        // 1-ADTS. The stream contains an adts_sequence(), as defined by MPEG-2.
+        // 2-ADIF. The stream contains an adif_sequence(), as defined by MPEG-2.
+        // 3-LOAS. The stream contains an MPEG-4 audio transport stream with a
+        //         synchronization layer LOAS and a multiplex layer LATM.
+        // All other codes are reserved.
+        wPayloadType: word;
+
+        // This is the 8-bit field audioProfileLevelIndication available in the
+        // MPEG-4 object descriptor.  It is an indication (as defined in MPEG-4 audio)
+        // of the audio profile and level required to process the content associated
+        // with this stream. For example values $28-$2B correspond to AAC Profile,
+        // values $2C-$2F correspond to HE-AAC profile and $30-$33 for HE-AAC v2 profile.
+        // If unknown, set to zero or $FE ("no audio profile specified").
+        wAudioProfileLevelIndication: word;
+
+        // Defines the data that follows this structure. Currently only one data type is supported:
+        // 0- AudioSpecificConfig() (as defined by MPEG-4 Audio, ISO/IEC 14496-3) will follow this structure.
+        //    wfx.cbSize will indicate the total length including AudioSpecificConfig().
+        //    Use HEAACWAVEFORMAT to gain easy access to the address of the first byte of
+        //    AudioSpecificConfig() for parsing.
+        //    Typical values for the size of AudioSpecificConfig (ASC) are:
+        //    - 2 bytes for AAC or HE-AAC v1/v2 with implicit signaling of SBR,
+        //    - 5 bytes for HE-AAC v1 with explicit signaling of SBR,
+        //    - 7 bytes for HE-AAC v2 with explicit signaling of SBR and PS.
+        //    The size may be longer than 7 bytes if the 4-bit channelConfiguration field in ASC is zero,
+        //    which means program_config_element() is present in ASC.
+
+        // All other codes are reserved.
+        wStructType: word;
+
+        // Set these to zero
+        wReserved1: word;
+        dwReserved2: DWORD;
+    end;  // this structure has a size of 30 bytes
+
+    PHEAACWAVEINFO = ^THEAACWAVEINFO;
+
+    // This structure describes the format block for wStructType=0
+
+    THEAACWAVEFORMAT = record
+        wfInfo: THEAACWAVEINFO; // This structure has a size of 30 bytes
+        pbAudioSpecificConfig: PBYTE;  // First byte of AudioSpecificConfig()
+    end; // This structure has a size of 31 bytes
+
+    PHEAACWAVEFORMAT = ^THEAACWAVEFORMAT;
+
+    TMSAUDIO1WAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+        wSamplesPerBlock: word; // only counting "new" samples "= half of what will be used due to overlapping
+        wEncodeOptions: word;
+    end;
+
+    PMSAUDIO1WAVEFORMAT = ^TMSAUDIO1WAVEFORMAT;
+
+    TWMAUDIO2WAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+        dwSamplesPerBlock: DWORD; // only counting "new" samples "= half of what will be used due to overlapping
+        wEncodeOptions: word;
+        dwSuperBlockAlign: DWORD; // the big size...  should be multiples of wfx.nBlockAlign.
+    end;
+
+    PWMAUDIO2WAVEFORMAT = ^TWMAUDIO2WAVEFORMAT;
+
+    TWMAUDIO3WAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+        wValidBitsPerSample: word; // bits of precision
+        dwChannelMask: DWORD;       // which channels are present in stream
+        dwReserved1: DWORD;
+        dwReserved2: DWORD;
+        wEncodeOptions: word;
+        wReserved3: word;
+    end;
+
+    PWMAUDIO3WAVEFORMAT = ^TWMAUDIO3WAVEFORMAT;
+
+    //  Creative's ADPCM structure definitions
+    //  for WAVE_FORMAT_CREATIVE_ADPCM   ($0200)
+    TCREATIVEADPCMWAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+        wRevision: word;
+    end;
+    PCREATIVEADPCMWAVEFORMAT = ^TCREATIVEADPCMWAVEFORMAT;
+
+    //    Creative FASTSPEECH
+    // WAVEFORMAT_CREATIVE_FASTSPEECH8   ($0202)
+    TCREATIVEFASTSPEECH8WAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+        wRevision: word;
+    end;
+    PCREATIVEFASTSPEECH8WAVEFORMAT = ^TCREATIVEFASTSPEECH8WAVEFORMAT;
+
+    //    Creative FASTSPEECH
+    // WAVEFORMAT_CREATIVE_FASTSPEECH10   ($0203)
+    TCREATIVEFASTSPEECH10WAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+        wRevision: word;
+    end;
+    PCREATIVEFASTSPEECH10WAVEFORMAT = ^TCREATIVEFASTSPEECH10WAVEFORMAT;
+
+    //  Fujitsu FM Towns 'SND' structure
+    //      for WAVE_FORMAT_FMMTOWNS_SND   ($0300)
+    TFMTOWNS_SND_WAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+        wRevision: word;
+    end;
+    PFMTOWNS_SND_WAVEFORMAT = ^TFMTOWNS_SND_WAVEFORMAT;
+
+    //  Olivetti structure
+    //  for WAVE_FORMAT_OLIGSM   ($1000)
+    TOLIGSMWAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+    end;
+    POLIGSMWAVEFORMAT = ^TOLIGSMWAVEFORMAT;
+
+
+    //  Olivetti structure
+    //  for WAVE_FORMAT_OLIADPCM   ($1001)
+    TOLIADPCMWAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+    end;
+    POLIADPCMWAVEFORMAT = ^TOLIADPCMWAVEFORMAT;
+
+    //  Olivetti structure
+    //  for WAVE_FORMAT_OLICELP   ($1002)
+
+    TOLICELPWAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+    end;
+    POLICELPWAVEFORMAT = ^TOLICELPWAVEFORMAT;
+
+    //  Olivetti structure
+    //      for WAVE_FORMAT_OLISBC   ($1003)
+    TOLISBCWAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+    end;
+    POLISBCWAVEFORMAT = ^TOLISBCWAVEFORMAT;
+
+    //  Olivetti structure
+    //      for WAVE_FORMAT_OLIOPR   ($1004)
+    TOLIOPRWAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+    end;
+    POLIOPRWAVEFORMAT = ^TOLIOPRWAVEFORMAT;
+
+    //  Crystal Semiconductor IMA ADPCM format
+    //  for WAVE_FORMAT_CS_IMAADPCM   ($0039)
+
+    TCSIMAADPCMWAVEFORMAT = record
+        wfx: TWAVEFORMATEX;
+    end;
+    PCSIMAADPCMWAVEFORMAT = ^TCSIMAADPCMWAVEFORMAT;
+
+    //  ACM Wave Filters
+    TWAVEFILTER = record
+        cbStruct: DWORD;           (* Size of the filter in bytes *)
+        dwFilterTag: DWORD;        (* filter type *)
+        fdwFilter: DWORD;          (* Flags for the filter (Universal Dfns) *)
+        dwReserved: array[0..4] of DWORD;      (* Reserved for system use *)
+    end;
+    PWAVEFILTER = ^TWAVEFILTER;
+
+
+    TVOLUMEWAVEFILTER = record
+        wfltr: TWAVEFILTER;
+        dwVolume: DWORD;
+    end;
+    PVOLUMEWAVEFILTER = ^TVOLUMEWAVEFILTER;
+
+    TECHOWAVEFILTER = record
+        wfltr: TWAVEFILTER;
+        dwVolume: DWORD;
+        dwDelay: DWORD;
+    end;
+    PECHOWAVEFILTER = ^TECHOWAVEFILTER;
+
+    Ttag_s_RIFFWAVE_inst = record
+        bUnshiftedNote: byte;
+        chFineTune: char;
+        chGain: char;
+        bLowNote: byte;
+        bHighNote: byte;
+        bLowVelocity: byte;
+        bHighVelocity: byte;
+    end;
+
+    Ts_RIFFWAVE_inst = Ttag_s_RIFFWAVE_INST;
+
+    (* Structure definitions *)
+    TEXBMINFOHEADER = record
+        bmi: TBITMAPINFOHEADER;
+        (* extended BITMAPINFOHEADER fields *)
+        biExtDataOffset: DWORD;
+        (* Other stuff will go here *)
+
+        (* ... *)
+
+        (* Format-specific information *)
+        (* biExtDataOffset points here *)
+    end;
+
+    (* Structure definitions *)
+
+    TJPEGINFOHEADER = record
+        (* compression-specific fields *)
+        (* these fields are defined for 'JPEG' and 'MJPG' *)
+        JPEGSize: DWORD;
+        JPEGProcess: DWORD;
+        (* Process specific fields *)
+        JPEGColorSpaceID: DWORD;
+        JPEGBitsPerSample: DWORD;
+        JPEGHSubSampling: DWORD;
+        JPEGVSubSampling: DWORD;
+    end;
+
 {$Z1}
 {$A1}
-{$IFDEF __MIDL}
+ {$IFDEF __MIDL}
 
     // pragma pack(push, 1)
     TWAVEFORMATEX = packed record
-        wFormatTag: WORD;
-        nChannels: WORD;
+        wFormatTag: word;
+        nChannels: word;
         nSamplesPerSec: DWORD;
         nAvgBytesPerSec: DWORD;
-        nBlockAlign: WORD;
-        wBitsPerSample: WORD;
-        cbSize: WORD;
+        nBlockAlign: word;
+        wBitsPerSample: word;
+        cbSize: word;
         pExtraBytes: PBYTE;
     end;
 
     PWAVEFORMATEX = ^TWAVEFORMATEX;
 
     TWAVEFORMATEXTENSIBLE = record
-        wFormatTag: WORD;
-        nChannels: WORD;
+        wFormatTag: word;
+        nChannels: word;
         nSamplesPerSec: DWORD;
         nAvgBytesPerSec: DWORD;
-        nBlockAlign: WORD;
-        wBitsPerSample: WORD;
-        cbSize: WORD;
-        wValidBitsPerSample: WORD;
+        nBlockAlign: word;
+        wBitsPerSample: word;
+        cbSize: word;
+        wValidBitsPerSample: word;
         dwChannelMask: DWORD;
         SubFormat: TGUID;
     end;
 
     PWAVEFORMATEXTENSIBLE = ^TWAVEFORMATEXTENSIBLE;
+
 {$ENDIF}
 {$A4}
 {$Z4}
-    // pragma pack(pop)  ; (* Assume byte packing throughout *)
+// pragma pack(pop)  ; (* Assume byte packing throughout *)
+
+const
+    MSAUDIO1_BITS_PER_SAMPLE = WMAUDIO_BITS_PER_SAMPLE;
+    MSAUDIO1_MAX_CHANNELS = WMAUDIO_MAX_CHANNELS;
+    MSAUDIO1_WFX_EXTRA_BYTES = (sizeof(TMSAUDIO1WAVEFORMAT) - sizeof(TWAVEFORMATEX));
+    WMAUDIO2_BITS_PER_SAMPLE = WMAUDIO_BITS_PER_SAMPLE;
+    WMAUDIO2_MAX_CHANNELS = WMAUDIO_MAX_CHANNELS;
+    WMAUDIO2_WFX_EXTRA_BYTES = (sizeof(TWMAUDIO2WAVEFORMAT) - sizeof(TWAVEFORMATEX));
+    WMAUDIO3_WFX_EXTRA_BYTES = (sizeof(TWMAUDIO3WAVEFORMAT) - sizeof(TWAVEFORMATEX));
+
+
+function INIT_MMREG_MID(id: integer): TGUID;
+function EXTRACT_MMREG_MID(guid: TGUID): UShort;
+function IS_COMPATIBLE_MMREG_MID(guid: TGUID): boolean;
+function INIT_MMREG_PID(id: USHORT): TGUID;
+function EXTRACT_MMREG_PID(guid: TGUID): USHORT;
+function DEFINE_MMREG_PID_GUID(id: USHORT): TGUID;
+function IS_COMPATIBLE_MMREG_PID(guid: TGUID): boolean;
+function DEFINE_WAVEFORMATEX_GUID(x: USHort): TGUID;
+
+procedure INIT_WAVEFORMATEX_GUID(var Guid: TGUID; x: USHORT);
+function EXTRACT_WAVEFORMATEX_ID(const Guid: TGUID): USHORT;
+function IS_VALID_WAVEFORMATEX_GUID(const Guid: PGUID): boolean;
 
 implementation
+
+
+
+function INIT_MMREG_MID(id: integer): TGUID;
+begin
+    Result.Data1 := $d5a47fa7 + id;
+    Result.Data2 := $6d98;
+    Result.Data3 := $11d1;
+    Result.Data4[0] := $a2;
+    Result.Data4[1] := $1a;
+    Result.Data4[2] := $00;
+    Result.Data4[3] := $a0;
+    Result.Data4[4] := $c9;
+    Result.Data4[5] := $22;
+    Result.Data4[6] := $31;
+    Result.Data4[7] := $96;
+end;
+
+
+
+function EXTRACT_MMREG_MID(guid: TGUID): UShort;
+begin
+    Result := guid.Data1 - $d5a47fa7;
+end;
+
+
+
+function IS_COMPATIBLE_MMREG_MID(guid: TGUID): boolean;
+begin
+    Result := ((guid.Data1 >= $d5a47fa7) and (guid.Data1 < $d5a47fa7 + $ffff) and (guid.Data2 = $6d98) and
+        (guid.Data3 = $11d1) and (guid.Data4[0] = $a2) and (guid.Data4[1] = $1a) and (guid.Data4[2] = $00) and
+        (guid.Data4[3] = $a0) and (guid.Data4[4] = $c9) and (guid.Data4[5] = $22) and (guid.Data4[6] = $31) and (guid.Data4[7] = $96));
+end;
+
+
+
+function INIT_MMREG_PID(id: USHORT): TGUID;
+begin
+    Result.Data1 := $e36dc2ac + (id);
+    Result.Data2 := $6d9a;
+    Result.Data3 := $11d1;
+    Result.Data4[0] := $a2;
+    Result.Data4[1] := $1a;
+    Result.Data4[2] := $00;
+    Result.Data4[3] := $a0;
+    Result.Data4[4] := $c9;
+    Result.Data4[5] := $22;
+    Result.Data4[6] := $31;
+    Result.Data4[7] := $96;
+end;
+
+
+
+function EXTRACT_MMREG_PID(guid: TGUID): USHORT;
+begin
+    Result := guid.Data1 - $e36dc2ac;
+end;
+
+
+
+function DEFINE_MMREG_PID_GUID(id: USHORT): TGUID;
+begin
+    Result.Data1 := $e36dc2ac + (id);
+    Result.Data2 := $6d9a;
+    Result.Data3 := $11d1;
+    Result.Data4[0] := $a2;
+    Result.Data4[1] := $1a;
+    Result.Data4[2] := $00;
+    Result.Data4[3] := $a0;
+    Result.Data4[4] := $c9;
+    Result.Data4[5] := $22;
+    Result.Data4[6] := $31;
+    Result.Data4[7] := $96;
+end;
+
+
+
+function IS_COMPATIBLE_MMREG_PID(guid: TGUID): boolean;
+begin
+    Result := ((guid.Data1 >= $e36dc2ac) and (guid.Data1 < $e36dc2ac + $ffff) and (guid.Data2 = $6d9a) and
+        (guid.Data3 = $11d1) and (guid.Data4[0] = $a2) and (guid.Data4[1] = $1a) and (guid.Data4[2] = $00) and
+        (guid.Data4[3] = $a0) and (guid.Data4[4] = $c9) and (guid.Data4[5] = $22) and (guid.Data4[6] = $31) and (guid.Data4[7] = $96));
+end;
+
+
+
+function DEFINE_WAVEFORMATEX_GUID(x: USHort): TGUID;
+begin
+    Result.Data1 := (x);
+    Result.Data2 := $0000;
+    Result.Data3 := $0010;
+    Result.Data4[0] := $80;
+    Result.Data4[1] := $00;
+    Result.Data4[2] := $00;
+    Result.Data4[3] := $aa;
+    Result.Data4[4] := $00;
+    Result.Data4[5] := $38;
+    Result.Data4[6] := $9b;
+    Result.Data4[7] := $71;
+end;
+
+
+
+procedure INIT_WAVEFORMATEX_GUID(var Guid: TGUID; x: USHORT);
+begin
+    Guid := KSDATAFORMAT_SUBTYPE_WAVEFORMATEX;
+    guid.Data1 := x;
+end;
+
+
+
+function EXTRACT_WAVEFORMATEX_ID(const Guid: TGUID): USHORT;
+begin
+    Result := guid.Data1;
+end;
+
+
+
+function IS_VALID_WAVEFORMATEX_GUID(const Guid: PGUID): boolean;
+var
+    p1, p2: PUShort;
+begin
+    p1 := PUShort(@KSDATAFORMAT_SUBTYPE_WAVEFORMATEX) + 1;
+    p2 := PUShort(Guid) + 1;
+    Result := (CompareWord(p1, p2, sizeof(TGUID) - sizeof(USHORT)) = 0);
+end;
+
+
+
+function DEFINE_MMREG_MID_GUID(id: UShort): TGUID;
+begin
+    Result.Data1 := $d5a47fa7 + id;
+    Result.Data2 := $6d98;
+    Result.Data3 := $11d1;
+    Result.Data4[0] := $a2;
+    Result.Data4[1] := $1a;
+    Result.Data4[2] := $00;
+    Result.Data4[3] := $a0;
+    Result.Data4[4] := $c9;
+    Result.Data4[5] := $22;
+    Result.Data4[6] := $31;
+    Result.Data4[7] := $96;
+end;
 
 end.

@@ -1,4 +1,8 @@
-unit CMC.MFTransform;
+unit Win32.MFTransform;
+
+// Updated to SDK 10.0.17763.0
+// (c) Translation to Pascal by Norbert Sonnleitner
+
 {$IFDEF FPC}
 {$MODE delphi}
 {$ENDIF}
@@ -6,18 +10,31 @@ unit CMC.MFTransform;
 interface
 
 uses
-    Windows, Classes, SysUtils, CMC.MFObjects, CMC.WTypes;
+    Windows, Classes, SysUtils, Win32.MFObjects, CMC.WTypes;
 
 const
     MFPlat_DLL = 'MFPlat.dll';
 
 const
     IID_IMFTransform: TGUID = '{bf94c121-5b05-4e6f-8000-ba598961414d}';
+    IID_IMFDeviceTransform: TGUID = '{D818FBD8-FC46-42F2-87AC-1EA2D1F9BF32}';
+    IID_IMFDeviceTransformCallback: TGUID = '{6D5CB646-29EC-41FB-8179-8C4C6D750811}';
+    MFT_AUDIO_DECODER_DEGRADATION_INFO_ATTRIBUTE: TGUID = '{6c3386ad-ec20-430d-b2a5-505c7178d9c4}';
+
+    MEDeviceStreamCreated: TGUID = '{0252a1cf-3540-43b4-9164-d72eb405fa40}';
 
     MF_SA_D3D_AWARE: TGUID = '{eaa35c29-775e-488e-9b61-b3283e49583b}';
     MF_SA_REQUIRED_SAMPLE_COUNT: TGUID = '{18802c61-324b-4952-abd0-176ff5c696ff}';
     MFT_END_STREAMING_AWARE: TGUID = '{70fbc845-b07e-4089-b064-399dc6110f29}';
     MF_SA_REQUIRED_SAMPLE_COUNT_PROGRESSIVE: TGUID = '{b172d58e-fa77-4e48-8d2a-1df2d850eac2}';
+
+    MF_SA_AUDIO_ENDPOINT_AWARE: TGUID = '{c0381701-805c-42b2-ac8d-e2b4bf21f4f8}';
+    MFT_AUDIO_DECODER_AUDIO_ENDPOINT_ID: TGUID = '{c7ccdd6e-5398-4695-8be7-51b3e95111bd}';
+    MFT_AUDIO_DECODER_SPATIAL_METADATA_CLIENT: TGUID = '{05987df4-1270-4999-925f-8e939a7c0af7}';
+
+
+
+
     MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT: TGUID = '{851745d5-c3d6-476d-9527-498ef2d10d18}';
     MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT_PROGRESSIVE: TGUID = '{0f5523a5-1cb2-47c5-a550-2eeb84b4d14a}';
     MFT_SUPPORT_3DVIDEO: TGUID = '{093f81b1-4f2e-4631-8168-7934032a01d3}';
@@ -37,6 +54,7 @@ const
     MFT_DECODER_FINAL_VIDEO_RESOLUTION_HINT: TGUID = '{dc2f8496-15c4-407a-b6f0-1b66ab5fbf53}';
     MFT_ENCODER_SUPPORTS_CONFIG_EVENT: TGUID = '{86a355ae-3a77-4ec4-9f31-01149a4e92de}';
     MFT_ENUM_HARDWARE_VENDOR_ID_Attribute: TGUID = '{3aecb0cc-035b-4bcc-8185-2b8d551ef3af}';
+
     MF_TRANSFORM_ASYNC: TGUID = '{f81a699a-649a-497d-8c73-29f8fed6ad7a}';
     MF_TRANSFORM_ASYNC_UNLOCK: TGUID = '{e5666d6b-3422-4eb6-a421-da7db1f8e207}';
     MF_TRANSFORM_FLAGS_Attribute: TGUID = '{9359bb7e-6275-46c4-a025-1c01e45f1a86}';
@@ -55,11 +73,15 @@ const
     MFT_FIELDOFUSE_UNLOCK_Attribute: TGUID = '{8ec2e9fd-9148-410d-831e-702439461a8e}';
     MFT_CODEC_MERIT_Attribute: TGUID = '{88a7cb15-7b07-4a34-9128-e64c6703c4d3}';
     MFT_ENUM_TRANSCODE_ONLY_ATTRIBUTE: TGUID = '{111ea8cd-b62a-4bdb-89f6-67ffcdc2458b}';
+    MF_DMFT_FRAME_BUFFER_INFO: TGUID = '{396CE1C9-67A9-454C-8797-95A45799D804}';
 
     MFPKEY_CLSID: TPROPERTYKEY = (fmtid: '{c57a84c0-1a80-40a3-97b5-9272a403c8ae}'; pid: $01);
     MFPKEY_CATEGORY: TPROPERTYKEY = (fmtid: '{c57a84c0-1a80-40a3-97b5-9272a403c8ae}'; pid: $02);
     MFPKEY_EXATTRIBUTE_SUPPORTED: TPROPERTYKEY = (fmtid: '{456fe843-3c87-40c0-949d-1409c97dab2c}'; pid: $01);
     MFPKEY_MULTICHANNEL_CHANNEL_MASK: TPROPERTYKEY = (fmtid: '{58bdaf8c-3224-4692-86d0-44d65c5bf82b}'; pid: $01);
+
+
+
 
 const
     MFT_STREAMS_UNLIMITED = $FFFFFFFF;
@@ -95,10 +117,15 @@ type
 
     TMFT_DRAIN_TYPE = (MFT_DRAIN_PRODUCE_TAILS = 0, MFT_DRAIN_NO_TAILS = $1);
 
-    TMFT_MESSAGE_TYPE = (MFT_MESSAGE_COMMAND_FLUSH = 0, MFT_MESSAGE_COMMAND_DRAIN = $1, MFT_MESSAGE_SET_D3D_MANAGER = $2, MFT_MESSAGE_DROP_SAMPLES = $3,
+    TMFT_MESSAGE_TYPE = (MFT_MESSAGE_COMMAND_FLUSH = 0, MFT_MESSAGE_COMMAND_DRAIN = $1, MFT_MESSAGE_SET_D3D_MANAGER =
+        $2, MFT_MESSAGE_DROP_SAMPLES = $3,
         MFT_MESSAGE_COMMAND_TICK = $4, MFT_MESSAGE_NOTIFY_BEGIN_STREAMING = $10000000, MFT_MESSAGE_NOTIFY_END_STREAMING = $10000001,
-        MFT_MESSAGE_NOTIFY_END_OF_STREAM = $10000002, MFT_MESSAGE_NOTIFY_START_OF_STREAM = $10000003, MFT_MESSAGE_NOTIFY_RELEASE_RESOURCES = $10000004,
-        MFT_MESSAGE_NOTIFY_REACQUIRE_RESOURCES = $10000005,	MFT_MESSAGE_NOTIFY_EVENT	= $10000006, MFT_MESSAGE_COMMAND_MARKER = $20000000);
+        MFT_MESSAGE_NOTIFY_END_OF_STREAM = $10000002, MFT_MESSAGE_NOTIFY_START_OF_STREAM = $10000003,
+        MFT_MESSAGE_NOTIFY_RELEASE_RESOURCES = $10000004,
+        MFT_MESSAGE_NOTIFY_REACQUIRE_RESOURCES = $10000005, MFT_MESSAGE_NOTIFY_EVENT = $10000006,
+        MFT_MESSAGE_COMMAND_SET_OUTPUT_STREAM_STATE = $10000007,
+        MFT_MESSAGE_COMMAND_FLUSH_OUTPUT_STREAM = $10000008,
+        MFT_MESSAGE_COMMAND_MARKER = $20000000);
 
     TMFT_INPUT_STREAM_INFO = record
         hnsMaxLatency: LONGLONG;
@@ -125,10 +152,12 @@ type
 
     IMFTransform = interface(IUnknown)
         ['{bf94c121-5b05-4e6f-8000-ba598961414d}']
-        function GetStreamLimits(out pdwInputMinimum: DWORD; out pdwInputMaximum: DWORD; out pdwOutputMinimum: DWORD; out pdwOutputMaximum: DWORD): HResult;
-          stdcall;
+        function GetStreamLimits(out pdwInputMinimum: DWORD; out pdwInputMaximum: DWORD; out pdwOutputMinimum: DWORD;
+            out pdwOutputMaximum: DWORD): HResult;
+            stdcall;
         function GetStreamCount(out pcInputStreams: DWORD; out pcOutputStreams: DWORD): HResult; stdcall;
-        function GetStreamIDs(dwInputIDArraySize: DWORD; out pdwInputIDs: PDWORD; dwOutputIDArraySize: DWORD; out pdwOutputIDs: PDWORD): HResult; stdcall;
+        function GetStreamIDs(dwInputIDArraySize: DWORD; out pdwInputIDs: PDWORD; dwOutputIDArraySize: DWORD;
+            out pdwOutputIDs: PDWORD): HResult; stdcall;
         function GetInputStreamInfo(dwInputStreamID: DWORD; out pStreamInfo: TMFT_INPUT_STREAM_INFO): HResult; stdcall;
         function GetOutputStreamInfo(dwOutputStreamID: DWORD; out pStreamInfo: TMFT_OUTPUT_STREAM_INFO): HResult; stdcall;
         function GetAttributes(out pAttributes: IMFAttributes): HResult; stdcall;
@@ -148,8 +177,19 @@ type
         function ProcessEvent(dwInputStreamID: DWORD; pEvent: IMFMediaEvent): HResult; stdcall;
         function ProcessMessage(eMessage: TMFT_MESSAGE_TYPE; ulParam: ULONG_PTR): HResult; stdcall;
         function ProcessInput(dwInputStreamID: DWORD; pSample: IMFSample; dwFlags: DWORD): HResult; stdcall;
-        function ProcessOutput(dwFlags: DWORD; cOutputBufferCount: DWORD; var pOutputSamples: PMFT_OUTPUT_DATA_BUFFER; out pdwStatus: DWORD): HResult; stdcall;
+        function ProcessOutput(dwFlags: DWORD; cOutputBufferCount: DWORD; var pOutputSamples: PMFT_OUTPUT_DATA_BUFFER;
+            out pdwStatus: DWORD): HResult; stdcall;
     end;
+
+    TDeviceStreamState = (
+        DeviceStreamState_Stop = 0,
+        DeviceStreamState_Pause = (DeviceStreamState_Stop + 1),
+        DeviceStreamState_Run = (DeviceStreamState_Pause + 1),
+        DeviceStreamState_Disabled = (DeviceStreamState_Run + 1)
+        );
+
+    PDeviceStreamState = ^TDeviceStreamState;
+
 
     TSTREAM_MEDIUM = record
         gidMedium: TGUID;
@@ -158,7 +198,70 @@ type
 
     PSTREAM_MEDIUM = ^TSTREAM_MEDIUM;
 
+    IMFDeviceTransform = interface(IUnknown)
+        ['{D818FBD8-FC46-42F2-87AC-1EA2D1F9BF32}']
+        function InitializeTransform(pAttributes: IMFAttributes): HResult; stdcall;
+        function GetInputAvailableType(dwInputStreamID: DWORD; dwTypeIndex: DWORD; out pMediaType: IMFMediaType): HResult; stdcall;
+        function GetInputCurrentType(dwInputStreamID: DWORD; out pMediaType: IMFMediaType): HResult; stdcall;
+        function GetInputStreamAttributes(dwInputStreamID: DWORD; out ppAttributes: IMFAttributes): HResult; stdcall;
+        function GetOutputAvailableType(dwOutputStreamID: DWORD; dwTypeIndex: DWORD; out pMediaType: IMFMediaType): HResult; stdcall;
+        function GetOutputCurrentType(dwOutputStreamID: DWORD; out pMediaType: IMFMediaType): HResult; stdcall;
+        function GetOutputStreamAttributes(dwOutputStreamID: DWORD; out ppAttributes: IMFAttributes): HResult; stdcall;
+        function GetStreamCount(out pcInputStreams: DWORD; out pcOutputStreams: DWORD): HResult; stdcall;
+        function GetStreamIDs(dwInputIDArraySize: DWORD; out pdwInputStreamIds: DWORD; dwOutputIDArraySize: DWORD;
+            out pdwOutputStreamIds: DWORD): HResult; stdcall;
+        function ProcessEvent(dwInputStreamID: DWORD; pEvent: IMFMediaEvent): HResult; stdcall;
+        function ProcessInput(dwInputStreamID: DWORD; pSample: IMFSample; dwFlags: DWORD): HResult; stdcall;
+        function ProcessMessage(eMessage: TMFT_MESSAGE_TYPE; ulParam: ULONG_PTR): HResult; stdcall;
+        function ProcessOutput(dwFlags: DWORD; cOutputBufferCount: DWORD; var pOutputSample: PMFT_OUTPUT_DATA_BUFFER;
+            out pdwStatus: DWORD): HResult; stdcall;
+        function SetInputStreamState(dwStreamID: DWORD; pMediaType: IMFMediaType; Value: TDeviceStreamState;
+            dwFlags: DWORD): HResult; stdcall;
+        function GetInputStreamState(dwStreamID: DWORD; out Value: TDeviceStreamState): HResult; stdcall;
+        function SetOutputStreamState(dwStreamID: DWORD; pMediaType: IMFMediaType; Value: TDeviceStreamState;
+            dwFlags: DWORD): HResult; stdcall;
+        function GetOutputStreamState(dwStreamID: DWORD; out Value: TDeviceStreamState): HResult; stdcall;
+        function GetInputStreamPreferredState(dwStreamID: DWORD; out Value: TDeviceStreamState;
+            out ppMediaType: IMFMediaType): HResult; stdcall;
+        function FlushInputStream(dwStreamIndex: DWORD; dwFlags: DWORD): HResult; stdcall;
+        function FlushOutputStream(dwStreamIndex: DWORD; dwFlags: DWORD): HResult; stdcall;
+    end;
+
+
+
+
+    IMFDeviceTransformCallback = interface(IUnknown)
+        ['{6D5CB646-29EC-41FB-8179-8C4C6D750811}']
+        function OnBufferSent(pCallbackAttributes: IMFAttributes; pinId: DWORD): HResult; stdcall;
+    end;
+
     TMF3DVideoOutputType = (MF3DVideoOutputType_BaseView = 0, MF3DVideoOutputType_Stereo = 1);
+
+
+    TMFT_AUDIO_DECODER_DEGRADATION_REASON = (
+        MFT_AUDIO_DECODER_DEGRADATION_REASON_NONE = 0,
+        MFT_AUDIO_DECODER_DEGRADATION_REASON_LICENSING_REQUIREMENT = 1
+        );
+
+    TMFT_AUDIO_DECODER_DEGRADATION_TYPE = (
+        MFT_AUDIO_DECODER_DEGRADATION_TYPE_NONE = 0,
+        MFT_AUDIO_DECODER_DEGRADATION_TYPE_DOWNMIX2CHANNEL = 1,
+        MFT_AUDIO_DECODER_DEGRADATION_TYPE_DOWNMIX6CHANNEL = 2,
+        MFT_AUDIO_DECODER_DEGRADATION_TYPE_DOWNMIX8CHANNEL = 3
+        );
+
+    TMFAudioDecoderDegradationInfo = record
+        eDegradationReason: TMFT_AUDIO_DECODER_DEGRADATION_REASON;
+        eType: TMFT_AUDIO_DECODER_DEGRADATION_TYPE;
+    end;
+
+    TMFT_STREAM_STATE_PARAM = record
+        StreamId: DWORD;
+        State: TMF_STREAM_STATE;
+    end;
+    PMFT_STREAM_STATE_PARAM = ^TMFT_STREAM_STATE_PARAM;
+
+
 
 function MFCreateTransformActivate(out ppActivate: IMFActivate): HResult; stdcall; external MFPlat_DLL;
 

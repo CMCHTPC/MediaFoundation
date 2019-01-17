@@ -8,7 +8,11 @@
 
 // MFAPI.h is the header containing the APIs for using the MF platform.
 
-unit CMC.MFAPI;
+// Updated to SDK 10.0.17763.0
+// (c) Translation to Pascal by Norbert Sonnleitner
+
+unit Win32.MFAPI;
+
 {$IFDEF FPC}
 {$MODE delphi}
 {$ENDIF}
@@ -18,7 +22,7 @@ interface
 uses
     Windows, Classes, SysUtils, ActiveX,
     DX12.DXGI,
-    CMC.MFObjects, CMC.MediaObj, CMC.MMReg, CMC.AMVideo, CMC.DVDMedia, CMC.KSMedia;
+    Win32.MFObjects, Win32.MediaObj, Win32.MMReg, Win32.AMVideo, Win32.DVDMedia, Win32.KSMedia;
 
 const
     MFPlat_DLL = 'mfplat.dll';
@@ -83,6 +87,10 @@ const
     MF_HISTOGRAM_CHANNEL_Cr = $00000020;
 
 const
+    // This GUID is used in IMFGetService::GetService calls to retrieve
+    // interfaces from the buffer.  Its value is also defined in evr.h
+    MR_BUFFER_SERVICE: TGUID = '{a562248c-9ac6-4ffc-9fba-3af8f8ad1a4d}';
+
     CLSID_MFSourceResolver: TGUID = '{90eab60f-e43a-4188-bcc4-e47fdf04868c}';
     MF_EVENT_SESSIONCAPS: TGUID = '{7E5EBCD0-11B8-4abe-AFAD-10F6599A7F42}';
     MF_EVENT_SESSIONCAPS_DELTA: TGUID = '{7E5EBCD1-11B8-4abe-AFAD-10F6599A7F42}';
@@ -132,6 +140,27 @@ const
     // {79EA74DF-A740-445B-BC98-C9ED1F260EEE}
     MFSampleExtension_AccumulatedNonRefPicPercent: TGUID = '{79ea74df-a740-445b-bc98-c9ed1f260eee}';
 
+    ////////////////////////////////////////////////////////////////////////////////
+    // Sample extensions for SAMPLE-AES encryption
+
+    // MFSampleExtension_Encryption_ProtectionScheme {D054D096-28BB-45DA-87EC-74F351871406}
+    // Type: UINT32
+    // Specifies the cipher and mode used to encrypt the content
+    MFSampleExtension_Encryption_ProtectionScheme: TGUID = '{D054D096-28BB-45DA-87EC-74F351871406}';
+
+
+
+
+    // MFSampleExtension_Encryption_CryptByteBlock {9D84289B-0C7F-4713-AB95-108AB42AD801}
+    // Type: UINT32
+    // Represents the number of encrypted blocks in the protection pattern, where each block is 16 bytes.
+    MFSampleExtension_Encryption_CryptByteBlock: TGUID = '{9D84289B-0C7F-4713-AB95-108AB42AD801}';
+
+
+    // MFSampleExtension_Encryption_SkipByteBlock {0D550548-8317-4AB1-845F-D06306E293E3}
+    // Type: UINT32
+    // Represents the number of unencrypted blocks in the protection pattern, where each block is 16 bytes.
+    MFSampleExtension_Encryption_SkipByteBlock: TGUID = '{0D550548-8317-4AB1-845F-D06306E293E3}';
 
     // Attributes for HW-DRM support
 
@@ -218,6 +247,23 @@ const
 
     MFSampleExtension_NALULengthInfo: TGUID = '{19124E7C-AD4B-465F-BB18-20186287B6AF}';
 
+    // MFSampleExtension_Encryption_ResumeVideoOutput. {A435ABA5-AFDE-4CF5-BC1C-F6ACAF13949D}
+    // Type: UINT32
+
+    // This attribute shall be used in hardware DRM scenario only
+    // it is set on input compressed sample to (H.264/HEVC) video decoder
+
+    // when present, it indicates video output in video render should resume on the first output (uncompressed) sample
+    // with the attribute MFSampleExtension_Encryption_ResumeVideoOutput set to true
+
+    // note: (H.264/HEVC) video decoder should buffer the attribute when video decoder
+    // detects the attribute set to true on some input sample, which might be dropped since
+    // those input sample might not be decode-able because of missing references,
+    // and set the attribute to true on the first output sample not dropped in video decoder
+
+    MFSampleExtension_Encryption_ResumeVideoOutput: TGUID = '{A435ABA5-AFDE-4CF5-BC1C-F6ACAF13949D}';
+
+
     // MFSampleExtension_Encryption_NALUTypes. {B0F067C7-714C-416C-8D59-5F4DDF8913B6}
     // Type: BLOB
     // The MF blob contains all the NALU type byte for different NALUs in the MF sample.One NALU type is one byte, including the syntaxes forbidden_zero_bit, nal_ref_idc, and nal_unit_type.
@@ -230,6 +276,8 @@ const
     // which is DWORD, four - byte length inforamtion for the bytes followed, and NALU data of SPS or PPS, for each NALU.
     // For example, the layout could be 10 in DWORD, 10 bytes data for SPS, 5 in DWORD, and 5 bytes data for PPS.In total, it has 4 + 10 + 4 + 5 = 23 bytes.
     MFSampleExtension_Encryption_SPSPPSData: TGUID = '{aede0fa2-0e0c-453c-b7f3-de8693364d11}';
+
+
 
 
     // MFSampleExtension_Encryption_SEIData {3CF0E972-4542-4687-9999-585F565FBA7D}
@@ -313,45 +361,38 @@ const
     MFSampleExtension_MoveRegions: TGUID = '{e2a6c693-3a8b-4b8d-95d0-f60281a12fb7}';
 
     MF_EVENT_SOURCE_TOPOLOGY_CANCELED: TGUID = '{db62f650-9a5e-4704-acf3-563bc6a73364}'; // Type: UINT32
-
     /// / MESourceCharacteristicsChanged attributes
-
     MF_EVENT_SOURCE_CHARACTERISTICS: TGUID = '{47db8490-8b22-4f52-afda-9ce1b2d3cfa8}'; // Type: UINT32
-
     MF_EVENT_SOURCE_CHARACTERISTICS_OLD: TGUID = '{47db8491-8b22-4f52-afda-9ce1b2d3cfa8}'; // Type: UINT32
 
 
     // MESourceRateChangeRequested attributes
-
     MF_EVENT_DO_THINNING: TGUID = '{321ea6fb-dad9-46e4-b31d-d2eae7090e30}'; // Type: UINT32
 
     // MEStreamSinkScrubSampleComplete attributes
-
     MF_EVENT_SCRUBSAMPLE_TIME: TGUID = '{9ac712b3-dcb8-44d5-8d0c-37455a2782e3}'; // Type: UINT64
 
-
     // MESinkInvalidated and MESessionStreamSinkFormatChanged attributes
-
     MF_EVENT_OUTPUT_NODE: TGUID = '{830f1a8b-c060-46dd-a801-1c95dec9b107}'; // Type: UINT64
 
-
     // METransformNeedInput attributes
-
     MF_EVENT_MFT_INPUT_STREAM_ID: TGUID = '{f29c2cca-7ae6-42d2-b284-bf837cc874e2}'; // Type: UINT32
 
-
     // METransformDrainComplete and METransformMarker attributes
-
     MF_EVENT_MFT_CONTEXT: TGUID = '{b7cd31f1-899e-4b41-80c9-26a896d32977}'; // Type: UINT64
 
-
     // MEContentProtectionMetadata attributes
-
     MF_EVENT_STREAM_METADATA_KEYDATA: TGUID = '{cd59a4a1-4a3b-4bbd-8665-72a40fbea776}'; // Type: BLOB
-
     MF_EVENT_STREAM_METADATA_CONTENT_KEYIDS: TGUID = '{5063449d-cc29-4fc6-a75a-d247b35af85c}'; // Type: BLOB
-
     MF_EVENT_STREAM_METADATA_SYSTEMID: TGUID = '{1ea2ef64-ba16-4a36-8719-fe7560ba32ad}'; // Type: BLOB
+
+
+
+    // MFSampleExtension_HDCP_OptionalHeader
+    // Type: BLOB
+    // This blob contains LPCM header in front of LPCM sample in a PES packet. It is
+    // encrypted when HDCP 2.x frames are sent, and is needed for decryption.
+    MFSampleExtension_HDCP_OptionalHeader: TGUID = '{9a2e7390-121f-455f-8376-c97428e0b540}';
 
     // (MFSampleExtension_HDCP_FrameCounter
     // Type: BLOB
@@ -359,29 +400,40 @@ const
     // HDCP 2.2/2.1 specification.  This blob should contain the stream counter and
     // input counter.
     MFSampleExtension_HDCP_FrameCounter: TGUID = '{9d389c60-f507-4aa6-a40a-71027a02f3de}';
-	
-	
-// MFSampleExtension_Timestamp  
-// Type: int64 
-// { 1e436999-69be-4c7a-9369-70068c0260cb } MFSampleExtension_Timestamp  {INT64 }
-// The timestamp of a sample
-// 
-MFSampleExtension_Timestamp: TGUID = '{1e436999-69be-4c7a-9369-70068c0260cb}';
 
-// MFSampleExtension_RepeatFrame {88BE738F-0711-4F42-B458-344AED42EC2F}
-// Type: UINT32
-// This UINT32 when set to 1 indicates that the frame is a repeat of the previous frame
-MFSampleExtension_RepeatFrame: TGUID = '{88BE738F-0711-4F42-B458-344AED42EC2F}';
+    // MFSampleExtension_HDCP_StreamID {177E5D74-C370-4A7A-95A2-36833C01D0AF}
+    // Type: UINT32
+    // This UINT32 value is provided to the HDCP Encryptor MFT on each input sample.
+    // The Stream ID value allows the HDCP Encryptor MFT to support time-multiplexed
+    // encryption of multiple independent streams.  An example is using 0 for first
+    // display video stream, 1 for second display video stream, 2 for first display audio
+    // stream, 3 for second display audio stream.
+    // Per the HDCP 2.2 specification, this value is referred to as streamCtr.  It is called
+    // StreamID here to be more intuitive.
+    MFSampleExtension_HDCP_StreamID: TGUID = '{177e5d74-c370-4a7a-95a2-36833c01d0af}';
 
-// MFT_ENCODER_ERROR {C8D1EDA4-98E4-41D5-9297-44F53852F90E}
-// Type: GUID 
-// This is the GUID of a property that caused the encoder MFT to fail initialization 
-MFT_ENCODER_ERROR: TGUID = '{C8D1EDA4-98E4-41D5-9297-44F53852F90E}';
 
-// MFT_GFX_DRIVER_VERSION_ID_Attribute {F34B9093-05E0-4B16-993D-3E2A2CDE6AD3}
-// Type: WSTR
-// For hardware MFTs, this attribute allows the HMFT to report the graphics driver version.
-MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6AD3}';
+    // MFSampleExtension_Timestamp
+    // Type: int64
+    // { 1e436999-69be-4c7a-9369-70068c0260cb } MFSampleExtension_Timestamp  {INT64 }
+    // The timestamp of a sample
+
+    MFSampleExtension_Timestamp: TGUID = '{1e436999-69be-4c7a-9369-70068c0260cb}';
+
+    // MFSampleExtension_RepeatFrame {88BE738F-0711-4F42-B458-344AED42EC2F}
+    // Type: UINT32
+    // This UINT32 when set to 1 indicates that the frame is a repeat of the previous frame
+    MFSampleExtension_RepeatFrame: TGUID = '{88BE738F-0711-4F42-B458-344AED42EC2F}';
+
+    // MFT_ENCODER_ERROR {C8D1EDA4-98E4-41D5-9297-44F53852F90E}
+    // Type: GUID
+    // This is the GUID of a property that caused the encoder MFT to fail initialization
+    MFT_ENCODER_ERROR: TGUID = '{C8D1EDA4-98E4-41D5-9297-44F53852F90E}';
+
+    // MFT_GFX_DRIVER_VERSION_ID_Attribute {F34B9093-05E0-4B16-993D-3E2A2CDE6AD3}
+    // Type: WSTR
+    // For hardware MFTs, this attribute allows the HMFT to report the graphics driver version.
+    MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6AD3}';
 
 
     /// //////////////////////////////////////////////////////////////////////////
@@ -458,6 +510,40 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
     // MFSampleExtension_ROIRectangle {3414a438-4998-4d2c-be82-be3ca0b24d43}
     // Type: BLOB
     MFSampleExtension_ROIRectangle: TGUID = '{3414a438-4998-4d2c-be82-be3ca0b24d43}';
+
+    // MFSampleExtension_LastSlice {2b5d5457-5547-4f07-b8c8-b4a3a9a1daac}
+    // Type: UINT32
+    MFSampleExtension_LastSlice: TGUID = '{2b5d5457-5547-4f07-b8c8-b4a3a9a1daac}';
+
+
+
+    // Indicates macroblock is not needed for output and can be skipped
+    MACROBLOCK_FLAG_SKIP = $00000001;
+    // Indicates macroblock is changed from the previous frame
+    MACROBLOCK_FLAG_DIRTY = $00000002;
+    // Indicates macroblock from the previous frame has moved to a new position
+    MACROBLOCK_FLAG_MOTION = $00000004;
+    // Indicates macroblock contains video playback or other continuous motion, rather than a slower moving screen capture
+    MACROBLOCK_FLAG_VIDEO = $00000008;
+    // Indicates that the motion vector values of MACROBLOCK_DATA are valid, and should be used in preference to
+    // the encoder's calculated motion vector values
+    MACROBLOCK_FLAG_HAS_MOTION_VECTOR = $00000010;
+    // Indicates that the QPDelta value of MACROBLOCK_DATA is valid, and specifies the QP of this macroblock relative
+    // to the rest of the frame
+    MACROBLOCK_FLAG_HAS_QP = $00000020;
+
+
+
+    // MFSampleExtension_FeatureMap {a032d165-46fc-400a-b449-49de53e62a6e}
+    // Type: BLOB
+    // Blob should contain one MACROBLOCK_DATA structure for each macroblock in the
+    // input frame.
+    MFSampleExtension_FeatureMap: TGUID = '{a032d165-46fc-400a-b449-49de53e62a6e}';
+
+    // MFSampleExtension_ChromaOnly {1eb9179c-a01f-4845-8c04-0e65a26eb04f}
+    // Type: BOOL (UINT32)
+    // Set to 1 if the input sample is a chroma-only frame
+    MFSampleExtension_ChromaOnly: TGUID = '{1eb9179c-a01f-4845-8c04-0e65a26eb04f}';
 
     /// ////////////////////////////////////////////////////////////////////////////
     /// These are the attribute GUIDs that need to be used by MFT0 to provide
@@ -584,13 +670,69 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
     MF_CAPTURE_METADATA_EXIF: TGUID = '{2e9575b8-8c31-4a02-8575-42b197b71592}';
 
 
+
+    // {6D688FFC-63D3-46FE-BADA-5B947DB0D080}
+    // TYPE: UINT64
+    MF_CAPTURE_METADATA_FRAME_ILLUMINATION: TGUID = '{6D688FFC-63D3-46FE-BADA-5B947DB0D080}';
+
+
+    // MF_CAPTURE_METADATA_UVC_PAYLOADHEADER {F9F88A87-E1DD-441E-95CB-42E21A64F1D9}
+    // Value type: Blob
+    // Stores USB Video Class Camera's payload header for user mode components to
+    // get the camera timestamps and other header information.
+    MF_CAPTURE_METADATA_UVC_PAYLOADHEADER: TGUID = '{F9F88A87-E1DD-441E-95CB-42E21A64F1D9}';
+
+
+    // MFSampleExtension_Depth_MinReliableDepth
+    // Type: UINT32, minimum reliable depth value in a D16 format depth frame.
+    // Default value if the attribute is absent is 1, because 0 represent invalid depth
+    // {5F8582B2-E36B-47C8-9B87-FEE1CA72C5B0}
+    MFSampleExtension_Depth_MinReliableDepth: TGUID = '{5F8582B2-E36B-47C8-9B87-FEE1CA72C5B0}';
+
+
+    // MFSampleExtension_Depth_MaxReliableDepth
+    // Type: UINT32, maximum reliable depth value in a D16 format depth frame
+    // Default value if the attribute is absent is 65535
+    // {E45545D1-1F0F-4A32-A8A7-6101A24EA8BE}
+    MFSampleExtension_Depth_MaxReliableDepth: TGUID = '{E45545D1-1F0F-4A32-A8A7-6101A24EA8BE}';
+
+
+    // MF_CAPTURE_METADATA_FIRST_SCANLINE_START_TIME_QPC {F9F88A87-E1DD-441E-95CB-42E21A64F1D9}
+    // Value type: UINT64
+    // Stores value of the start of scan in QPC time
+    MF_CAPTURE_METADATA_FIRST_SCANLINE_START_TIME_QPC: TGUID = '{F9F88A87-E1DD-441E-95CB-42E21A64F1D9}';
+
+
+    // MF_CAPTURE_METADATA_LAST_SCANLINE_END_TIME_QPC {F9F88A87-E1DD-441E-95CB-42E21A64F1D9}
+    // Value type: UINT64
+    // Stores value of the end of scan in QPC time
+    MF_CAPTURE_METADATA_LAST_SCANLINE_END_TIME_QPC: TGUID = '{F9F88A87-E1DD-441E-95CB-42E21A64F1D9}';
+
+
+    // MF_CAPTURE_METADATA_SCANLINE_TIME_QPC_ACCURACY {F9F88A87-E1DD-441E-95CB-42E21A64F1D9}
+    // Value type: UINT64
+    // Stores value of timestamp accuracy in QPC time absolute value
+    MF_CAPTURE_METADATA_SCANLINE_TIME_QPC_ACCURACY: TGUID = '{F9F88A87-E1DD-441E-95CB-42E21A64F1D9}';
+
+
+    // MF_CAPTURE_METADATA_SCAN_DIRECTION {F9F88A87-E1DD-441E-95CB-42E21A64F1D9}
+    // Value type: UINT32
+    // Bitfield of the way the scan is read. If value is $00, scan is Left to Right, Top to Bottom
+    // $0 - Left -> Right
+    // $1 - Right -> Left
+    // $2  Bottom -> Top
+    // $0 - Horizontal Scanline
+    // $4 - Vertical Scanline
+    MF_CAPTURE_METADATA_SCANLINE_DIRECTION: TGUID = '{F9F88A87-E1DD-441E-95CB-42E21A64F1D9}';
+
+
+    MFCAPTURE_METADATA_SCAN_RIGHT_LEFT = $00000001;
+    MFCAPTURE_METADATA_SCAN_BOTTOM_TOP = $00000002;
+    MFCAPTURE_METADATA_SCANLINE_VERTICAL = $00000004;
+
+
+
     // MFT Registry categories
-
-
-    // ifdef MF_INIT_GUIDS
-    // include <initguid.h>
-    // endif
-
     // {d6c02d4b-6833-45b4-971a-05a4b04bab91}   MFT_CATEGORY_VIDEO_DECODER
     MFT_CATEGORY_VIDEO_DECODER: TGUID = '{d6c02d4b-6833-45b4-971a-05a4b04bab91}';
 
@@ -621,6 +763,37 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
     // {90175d57-b7ea-4901-aeb3-933a8747756f}   MFT_CATEGORY_OTHER
     MFT_CATEGORY_OTHER: TGUID = '{90175d57-b7ea-4901-aeb3-933a8747756f}';
 
+
+    //{$IF  (NTDDI_VERSION >= NTDDI_WIN10_RS1)}
+    MFT_CATEGORY_ENCRYPTOR: TGUID = '{b0c687be-01cd-44b5-b8b2-7c1d7e058b1f}';
+    //{$ENDIF}
+
+    // TODO: switch to NTDDI_WIN10_RS3 when _NT_TARGET_VERSION is updated to support RS3
+    //{$IF  (NTDDI_VERSION >= NTDDI_WIN10_RS2)}
+    // {145CD8B4-92F4-4b23-8AE7-E0DF06C2DA95}   MFT_CATEGORY_VIDEO_RENDERER_EFFECT
+    MFT_CATEGORY_VIDEO_RENDERER_EFFECT: TGUID = '{145cd8b4-92f4-4b23-8ae7-E0DF06C2DA95}';
+    //{$ENDIF}
+
+    // TODO: switch to NTDDI_WIN10_RS3 when _NT_TARGET_VERSION is updated to support RS3
+    //{$IF  (NTDDI_VERSION >= NTDDI_WIN10_RS2)}
+
+    // MFT_ENUM_VIDEO_RENDERER_EXTENSION_PROFILE {62C56928-9A4E-443b-B9DC-CAC830C24100}
+    // Type: VT_VECTOR | VT_LPWSTR
+    // MFTEnumEx stores this on the attribute store of the IMFActivate object that
+    // MFTEnumEx creates for MFTs that have an associated UWP Manifest containing the tag
+    // VideoRendererExtensionProfiles.  This contains a list of all VideoRendererExtensionProfile
+    // entries in the VideoRendererExtensionProfiles tag.
+    MFT_ENUM_VIDEO_RENDERER_EXTENSION_PROFILE: TGUID = '{62c56928-9a4e-443b-b9dc-cac830c24100}';
+
+    //{$ENDIF} // (NTDDI_VERSION >= NTDDI_WIN10_RS2)
+
+    //{$IF  (NTDDI_VERSION >= NTDDI_WIN10_RS1)
+
+    // {1D39518C-E220-4DA8-A07F-BA172552D6B1}   MFT_ENUM_ADAPTER_LUID
+    MFT_ENUM_ADAPTER_LUID: TGUID = '{1d39518c-e220-4da8-a07f-ba172552d6b1}';
+    //{$ENDIF}
+
+
     /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////  MFT  Attributes GUIDs ////////////////////////////
     // {53476A11-3F13-49fb-AC42-EE2733C96741} MFT_SUPPORT_DYNAMIC_FORMAT_CHANGE {UINT32 (BOOL)}
     MFT_SUPPORT_DYNAMIC_FORMAT_CHANGE: TGUID = '{53476a11-3f13-49fb-ac42-ee2733c96741}';
@@ -630,7 +803,6 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
 
 
     // GUIDs for media types
-
 
     // In MF, media types for uncompressed video formats MUST be composed from a FourCC or D3DFORMAT combined with
     // the "base GUID" {00000000-0000-0010-8000-00AA00389B71} by replacing the initial 32 bits with the FourCC/D3DFORMAT
@@ -655,289 +827,348 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
     D3DFMT_X8R8G8B8 = 22;
     D3DFMT_R5G6B5 = 23;
     D3DFMT_X1R5G5B5 = 24;
+    D3DFMT_A2B10G10R10 = 31;
     D3DFMT_P8 = 41;
+    D3DFMT_L8 = 50;
+    D3DFMT_D16 = 80;
+    D3DFMT_L16 = 81;
+    D3DFMT_A16B16G16R16F = 113;
+
     LOCAL_D3DFMT_DEFINES = 1;
 {$IFDEF FPC}
-    MFVideoFormat_Base: TGUID = (Data1: $00000000; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_Base: TGUID = (Data1: $00000000; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
 
-    MFVideoFormat_RGB32: TGUID = (Data1: D3DFMT_X8R8G8B8; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_ARGB32: TGUID = (Data1: D3DFMT_A8R8G8B8; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_RGB24: TGUID = (Data1: D3DFMT_R8G8B8; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_RGB555: TGUID = (Data1: D3DFMT_X1R5G5B5; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_RGB565: TGUID = (Data1: D3DFMT_R5G6B5; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_RGB8: TGUID = (Data1: D3DFMT_P8; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_RGB32: TGUID = (Data1: D3DFMT_X8R8G8B8; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_ARGB32: TGUID = (Data1: D3DFMT_A8R8G8B8; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_RGB24: TGUID = (Data1: D3DFMT_R8G8B8; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_RGB555: TGUID = (Data1: D3DFMT_X1R5G5B5; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_RGB565: TGUID = (Data1: D3DFMT_R5G6B5; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_RGB8: TGUID = (Data1: D3DFMT_P8; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
 
-    MFVideoFormat_AI44: TGUID = (Data1: Ord('A') or (Ord('I') shl 8) or (Ord('4') shl 16) or (Ord('4') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_L8: TGUID = (Data1: D3DFMT_L8; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_L16: TGUID = (Data1: D3DFMT_L16; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_D16: TGUID = (Data1: D3DFMT_D16; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+
+
+    MFVideoFormat_AI44: TGUID = (Data1: Ord('A') or (Ord('I') shl 8) or (Ord('4') shl 16) or (Ord('4') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_AYUV: TGUID = (Data1: Ord('A') or (Ord('Y') shl 8) or (Ord('U') shl 16) or (Ord('V') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_AYUV: TGUID = (Data1: Ord('A') or (Ord('Y') shl 8) or (Ord('U') shl 16) or (Ord('V') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_YUY2: TGUID = (Data1: Ord('Y') or (Ord('U') shl 8) or (Ord('Y') shl 16) or (Ord('2') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_YUY2: TGUID = (Data1: Ord('Y') or (Ord('U') shl 8) or (Ord('Y') shl 16) or (Ord('2') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_YVYU: TGUID = (Data1: Ord('Y') or (Ord('V') shl 8) or (Ord('Y') shl 16) or (Ord('U') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_YVYU: TGUID = (Data1: Ord('Y') or (Ord('V') shl 8) or (Ord('Y') shl 16) or (Ord('U') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_YVU9: TGUID = (Data1: Ord('Y') or (Ord('V') shl 8) or (Ord('U') shl 16) or (Ord('9') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_YVU9: TGUID = (Data1: Ord('Y') or (Ord('V') shl 8) or (Ord('U') shl 16) or (Ord('9') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_UYVY: TGUID = (Data1: Ord('U') or (Ord('Y') shl 8) or (Ord('V') shl 16) or (Ord('Y') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_UYVY: TGUID = (Data1: Ord('U') or (Ord('Y') shl 8) or (Ord('V') shl 16) or (Ord('Y') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_NV11: TGUID = (Data1: Ord('N') or (Ord('V') shl 8) or (Ord('1') shl 16) or (Ord('1') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_NV11: TGUID = (Data1: Ord('N') or (Ord('V') shl 8) or (Ord('1') shl 16) or (Ord('1') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_NV12: TGUID = (Data1: Ord('N') or (Ord('V') shl 8) or (Ord('1') shl 16) or (Ord('2') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_NV12: TGUID = (Data1: Ord('N') or (Ord('V') shl 8) or (Ord('1') shl 16) or (Ord('2') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_YV12: TGUID = (Data1: Ord('Y') or (Ord('V') shl 8) or (Ord('1') shl 16) or (Ord('2') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_YV12: TGUID = (Data1: Ord('Y') or (Ord('V') shl 8) or (Ord('1') shl 16) or (Ord('2') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_I420: TGUID = (Data1: Ord('I') or (Ord('4') shl 8) or (Ord('2') shl 16) or (Ord('0') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_I420: TGUID = (Data1: Ord('I') or (Ord('4') shl 8) or (Ord('2') shl 16) or (Ord('0') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_IYUV: TGUID = (Data1: Ord('I') or (Ord('Y') shl 8) or (Ord('U') shl 16) or (Ord('V') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_IYUV: TGUID = (Data1: Ord('I') or (Ord('Y') shl 8) or (Ord('U') shl 16) or (Ord('V') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_Y210: TGUID = (Data1: Ord('Y') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_Y210: TGUID = (Data1: Ord('Y') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_Y216: TGUID = (Data1: Ord('Y') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_Y216: TGUID = (Data1: Ord('Y') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_Y410: TGUID = (Data1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_Y410: TGUID = (Data1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_Y416: TGUID = (Data1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_Y416: TGUID = (Data1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_Y41P: TGUID = (Data1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('P') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_Y41P: TGUID = (Data1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('P') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_Y41T: TGUID = (Data1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('T') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_Y41T: TGUID = (Data1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('T') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_Y42T: TGUID = (Data1: Ord('Y') or (Ord('4') shl 8) or (Ord('2') shl 16) or (Ord('T') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_Y42T: TGUID = (Data1: Ord('Y') or (Ord('4') shl 8) or (Ord('2') shl 16) or (Ord('T') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_P210: TGUID = (Data1: Ord('P') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_P210: TGUID = (Data1: Ord('P') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_P216: TGUID = (Data1: Ord('P') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_P216: TGUID = (Data1: Ord('P') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_P010: TGUID = (Data1: Ord('P') or (Ord('0') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_P010: TGUID = (Data1: Ord('P') or (Ord('0') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_P016: TGUID = (Data1: Ord('P') or (Ord('0') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_P016: TGUID = (Data1: Ord('P') or (Ord('0') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_v210: TGUID = (Data1: Ord('v') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_v210: TGUID = (Data1: Ord('v') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_v216: TGUID = (Data1: Ord('v') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_v216: TGUID = (Data1: Ord('v') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_v410: TGUID = (Data1: Ord('v') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_v410: TGUID = (Data1: Ord('v') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_MP43: TGUID = (Data1: Ord('M') or (Ord('P') shl 8) or (Ord('4') shl 16) or (Ord('3') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_MP43: TGUID = (Data1: Ord('M') or (Ord('P') shl 8) or (Ord('4') shl 16) or (Ord('3') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_MP4S: TGUID = (Data1: Ord('M') or (Ord('P') shl 8) or (Ord('4') shl 16) or (Ord('S') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_MP4S: TGUID = (Data1: Ord('M') or (Ord('P') shl 8) or (Ord('4') shl 16) or (Ord('S') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_M4S2: TGUID = (Data1: Ord('M') or (Ord('4') shl 8) or (Ord('S') shl 16) or (Ord('2') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_M4S2: TGUID = (Data1: Ord('M') or (Ord('4') shl 8) or (Ord('S') shl 16) or (Ord('2') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_MP4V: TGUID = (Data1: Ord('M') or (Ord('P') shl 8) or (Ord('4') shl 16) or (Ord('V') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_MP4V: TGUID = (Data1: Ord('M') or (Ord('P') shl 8) or (Ord('4') shl 16) or (Ord('V') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_WMV1: TGUID = (Data1: Ord('W') or (Ord('M') shl 8) or (Ord('V') shl 16) or (Ord('1') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_WMV1: TGUID = (Data1: Ord('W') or (Ord('M') shl 8) or (Ord('V') shl 16) or (Ord('1') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_WMV2: TGUID = (Data1: Ord('W') or (Ord('M') shl 8) or (Ord('V') shl 16) or (Ord('2') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_WMV2: TGUID = (Data1: Ord('W') or (Ord('M') shl 8) or (Ord('V') shl 16) or (Ord('2') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_WMV3: TGUID = (Data1: Ord('W') or (Ord('M') shl 8) or (Ord('V') shl 16) or (Ord('3') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_WMV3: TGUID = (Data1: Ord('W') or (Ord('M') shl 8) or (Ord('V') shl 16) or (Ord('3') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_WVC1: TGUID = (Data1: Ord('W') or (Ord('V') shl 8) or (Ord('C') shl 16) or (Ord('1') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_WVC1: TGUID = (Data1: Ord('W') or (Ord('V') shl 8) or (Ord('C') shl 16) or (Ord('1') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_MSS1: TGUID = (Data1: Ord('M') or (Ord('S') shl 8) or (Ord('S') shl 16) or (Ord('1') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_MSS1: TGUID = (Data1: Ord('M') or (Ord('S') shl 8) or (Ord('S') shl 16) or (Ord('1') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_MSS2: TGUID = (Data1: Ord('M') or (Ord('S') shl 8) or (Ord('S') shl 16) or (Ord('2') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_MSS2: TGUID = (Data1: Ord('M') or (Ord('S') shl 8) or (Ord('S') shl 16) or (Ord('2') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_MPG1: TGUID = (Data1: Ord('M') or (Ord('P') shl 8) or (Ord('G') shl 16) or (Ord('1') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_MPG1: TGUID = (Data1: Ord('M') or (Ord('P') shl 8) or (Ord('G') shl 16) or (Ord('1') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_DVSL: TGUID = (Data1: Ord('d') or (Ord('v') shl 8) or (Ord('s') shl 16) or (Ord('l') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_DVSL: TGUID = (Data1: Ord('d') or (Ord('v') shl 8) or (Ord('s') shl 16) or (Ord('l') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_DVSD: TGUID = (Data1: Ord('d') or (Ord('v') shl 8) or (Ord('s') shl 16) or (Ord('d') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_DVSD: TGUID = (Data1: Ord('d') or (Ord('v') shl 8) or (Ord('s') shl 16) or (Ord('d') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_DVHD: TGUID = (Data1: Ord('d') or (Ord('v') shl 8) or (Ord('h') shl 16) or (Ord('d') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_DVHD: TGUID = (Data1: Ord('d') or (Ord('v') shl 8) or (Ord('h') shl 16) or (Ord('d') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_DV25: TGUID = (Data1: Ord('d') or (Ord('v') shl 8) or (Ord('2') shl 16) or (Ord('5') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_DV25: TGUID = (Data1: Ord('d') or (Ord('v') shl 8) or (Ord('2') shl 16) or (Ord('5') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_DV50: TGUID = (Data1: Ord('d') or (Ord('v') shl 8) or (Ord('5') shl 16) or (Ord('0') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_DV50: TGUID = (Data1: Ord('d') or (Ord('v') shl 8) or (Ord('5') shl 16) or (Ord('0') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_DVH1: TGUID = (Data1: Ord('d') or (Ord('v') shl 8) or (Ord('h') shl 16) or (Ord('1') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_DVH1: TGUID = (Data1: Ord('d') or (Ord('v') shl 8) or (Ord('h') shl 16) or (Ord('1') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_DVC: TGUID = (Data1: Ord('d') or (Ord('v') shl 8) or (Ord('c') shl 16) or (Ord(' ') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_DVC: TGUID = (Data1: Ord('d') or (Ord('v') shl 8) or (Ord('c') shl 16) or (Ord(' ') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
     MFVideoFormat_H264: TGUID = (Data1: Ord('H') or (Ord('2') shl 8) or (Ord('6') shl 16) or (Ord('4') shl 24);
         // assume MFVideoFormat_H264 is frame aligned. that is, each input sample has one complete compressed frame (one frame picture, two field pictures or a single unpaired field picture)
-        Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_H265: TGUID = (Data1: Ord('H') or (Ord('2') shl 8) or (Ord('6') shl 16) or (Ord('5') shl 24); Data2: 0000; Data3: 0010;
+        Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_H265: TGUID = (Data1: Ord('H') or (Ord('2') shl 8) or (Ord('6') shl 16) or (Ord('5') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_MJPG: TGUID = (Data1: Ord('M') or (Ord('J') shl 8) or (Ord('P') shl 16) or (Ord('G') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_MJPG: TGUID = (Data1: Ord('M') or (Ord('J') shl 8) or (Ord('P') shl 16) or (Ord('G') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_420O: TGUID = (Data1: Ord('4') or (Ord('2') shl 8) or (Ord('0') shl 16) or (Ord('O') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_420O: TGUID = (Data1: Ord('4') or (Ord('2') shl 8) or (Ord('0') shl 16) or (Ord('O') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_HEVC: TGUID = (Data1: Ord('H') or (Ord('E') shl 8) or (Ord('V') shl 16) or (Ord('C') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_HEVC: TGUID = (Data1: Ord('H') or (Ord('E') shl 8) or (Ord('V') shl 16) or (Ord('C') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_HEVC_ES: TGUID = (Data1: Ord('H') or (Ord('E') shl 8) or (Ord('V') shl 16) or (Ord('S') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_HEVC_ES: TGUID = (Data1: Ord('H') or (Ord('E') shl 8) or (Ord('V') shl 16) or (Ord('S') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_VP80: TGUID = (Data1: Ord('V') or (Ord('P') shl 8) or (Ord('8') shl 16) or (Ord('0') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_VP80: TGUID = (Data1: Ord('V') or (Ord('P') shl 8) or (Ord('8') shl 16) or (Ord('0') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_VP90: TGUID = (Data1: Ord('V') or (Ord('P') shl 8) or (Ord('9') shl 16) or (Ord('0') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_VP90: TGUID = (Data1: Ord('V') or (Ord('P') shl 8) or (Ord('9') shl 16) or (Ord('0') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_H263: TGUID = (Data1: Ord('H') or (Ord('2') shl 8) or (Ord('6') shl 16) or (Ord('3') shl 24); Data2: 0000; Data3: 0010;
+    MFVideoFormat_ORAW: TGUID = (Data1: Ord('O') or (Ord('R') shl 8) or (Ord('A') shl 16) or (Ord('W') shl 24); Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_H263: TGUID = (Data1: Ord('H') or (Ord('2') shl 8) or (Ord('6') shl 16) or (Ord('3') shl 24); Data2: $0000; Data3: $0010;
+        Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+
+    //{$IF  (WDK_NTDDI_VERSION >= NTDDI_WIN10)}
+    MFVideoFormat_A2R10G10B10: TGUID = (Data1: D3DFMT_A2B10G10R10; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_A16B16G16R16F: TGUID = (Data1: D3DFMT_A16B16G16R16F; Data2: $0000; Data3: $0010;
+        Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    //{$ENDIF}
+
+    //{$IF  (WDK_NTDDI_VERSION >= NTDDI_WIN10_RS3)}
+    MFVideoFormat_VP10: TGUID = (Data1: Ord('V') or (Ord('P') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); Data2: $0000; Data3: $0010;
+        Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_AV1: TGUID = (Data1: Ord('A') or (Ord('V') shl 8) or (Ord('0') shl 16) or (Ord('1') shl 24); Data2: $0000; Data3: $0010;
+        Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    //{$ENDIF}
+
 
 
     // audio media types
 
-    MFAudioFormat_Base: TGUID = (Data1: $00000000; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_Base: TGUID = (Data1: $00000000; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
 
-    MFAudioFormat_PCM: TGUID = (Data1: WAVE_FORMAT_PCM; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_Float: TGUID = (Data1: WAVE_FORMAT_IEEE_FLOAT; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_DTS: TGUID = (Data1: WAVE_FORMAT_DTS; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_Dolby_AC3_SPDIF: TGUID = (Data1: WAVE_FORMAT_DOLBY_AC3_SPDIF; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_DRM: TGUID = (Data1: WAVE_FORMAT_DRM; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_WMAudioV8: TGUID = (Data1: WAVE_FORMAT_WMAUDIO2; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_WMAudioV9: TGUID = (Data1: WAVE_FORMAT_WMAUDIO3; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_WMAudio_Lossless: TGUID = (Data1: WAVE_FORMAT_WMAUDIO_LOSSLESS; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_WMASPDIF: TGUID = (Data1: WAVE_FORMAT_WMASPDIF; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_MSP1: TGUID = (Data1: WAVE_FORMAT_WMAVOICE9; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_MP3: TGUID = (Data1: WAVE_FORMAT_MPEGLAYER3; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_MPEG: TGUID = (Data1: WAVE_FORMAT_MPEG; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_AAC: TGUID = (Data1: WAVE_FORMAT_MPEG_HEAAC; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_ADTS: TGUID = (Data1: WAVE_FORMAT_MPEG_ADTS_AAC; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_AMR_NB: TGUID = (Data1: WAVE_FORMAT_AMR_NB; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_AMR_WB: TGUID = (Data1: WAVE_FORMAT_AMR_WB; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_AMR_WP: TGUID = (Data1: WAVE_FORMAT_AMR_WP; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_FLAC: TGUID = (Data1: WAVE_FORMAT_FLAC; Data2: 0000; Data3: 0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_ALAC: TGUID = (Data1: Ord('a') or (Ord('l') shl 8) or (Ord('a') shl 16) or (Ord('c') shl 24); Data2: 0000; Data3: 0010;
+    MFAudioFormat_PCM: TGUID = (Data1: WAVE_FORMAT_PCM; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_Float: TGUID = (Data1: WAVE_FORMAT_IEEE_FLOAT; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    // MFAudioFormat_DTS is for S/PDIF-encapsulated DTS core streams. It is the same as KSDATAFORMAT_SUBTYPE_IEC61937_DTS in ksmedia.h.
+    // Use MEDIASUBTYPE_DTS2 (defined in wmcodecdsp.h) for raw DTS core streams.
+    // If DTS extension substreams may be present, use MEDIASUBTYPE_DTS_HD instead for Master Audio, and MEDIASUBTYPE_DTS_HD_HRA for
+    // High Resolution Audio and other extension substream variants.
+    // (KSDATAFORMAT_SUBTYPE_IEC61937_DTS_HD is the S/PDIF media subtype for MEDIASUBTYPE_DTS_HD and MEDIASUBTYPE_DTS_HD_HRA.)
+    MFAudioFormat_DTS: TGUID = (Data1: WAVE_FORMAT_DTS; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+
+    // MFAudioFormat_Dolby_AC3_SPDIF is for S/PDIF-encapsulated AC-3. It is the same as KSDATAFORMAT_SUBTYPE_IEC61937_DOLBY_DIGITAL in ksmedia.h.
+    // Use MFAudioFormat_Dolby_AC3 (MEDIASUBTYPE_DOLBY_AC3 in wmcodecdsp.h) for raw AC-3 streams.
+    MFAudioFormat_Dolby_AC3_SPDIF: TGUID = (Data1: WAVE_FORMAT_DOLBY_AC3_SPDIF; Data2: $0000; Data3: $0010;
+        Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_DRM: TGUID = (Data1: WAVE_FORMAT_DRM; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_WMAudioV8: TGUID = (Data1: WAVE_FORMAT_WMAUDIO2; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_WMAudioV9: TGUID = (Data1: WAVE_FORMAT_WMAUDIO3; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_WMAudio_Lossless: TGUID = (Data1: WAVE_FORMAT_WMAUDIO_LOSSLESS; Data2: $0000; Data3: $0010;
+        Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_WMASPDIF: TGUID = (Data1: WAVE_FORMAT_WMASPDIF; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_MSP1: TGUID = (Data1: WAVE_FORMAT_WMAVOICE9; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_MP3: TGUID = (Data1: WAVE_FORMAT_MPEGLAYER3; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_MPEG: TGUID = (Data1: WAVE_FORMAT_MPEG; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_AAC: TGUID = (Data1: WAVE_FORMAT_MPEG_HEAAC; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_ADTS: TGUID = (Data1: WAVE_FORMAT_MPEG_ADTS_AAC; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_AMR_NB: TGUID = (Data1: WAVE_FORMAT_AMR_NB; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_AMR_WB: TGUID = (Data1: WAVE_FORMAT_AMR_WB; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_AMR_WP: TGUID = (Data1: WAVE_FORMAT_AMR_WP; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_FLAC: TGUID = (Data1: WAVE_FORMAT_FLAC; Data2: $0000; Data3: $0010; Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_ALAC: TGUID = (Data1: WAVE_FORMAT_ALAC; Data2: $0000; Data3: $0010;
+        Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_Opus: TGUID = (Data1: WAVE_FORMAT_OPUS; Data2: $0000; Data3: $0010;
         Data4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
 {$ELSE}
-    MFVideoFormat_Base: TGUID = (D1: $00000000; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_Base: TGUID = (D1: $00000000; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
 
-    MFVideoFormat_RGB32: TGUID = (D1: D3DFMT_X8R8G8B8; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_ARGB32: TGUID = (D1: D3DFMT_A8R8G8B8; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_RGB24: TGUID = (D1: D3DFMT_R8G8B8; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_RGB555: TGUID = (D1: D3DFMT_X1R5G5B5; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_RGB565: TGUID = (D1: D3DFMT_R5G6B5; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_RGB8: TGUID = (D1: D3DFMT_P8; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_RGB32: TGUID = (D1: D3DFMT_X8R8G8B8; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_ARGB32: TGUID = (D1: D3DFMT_A8R8G8B8; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_RGB24: TGUID = (D1: D3DFMT_R8G8B8; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_RGB555: TGUID = (D1: D3DFMT_X1R5G5B5; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_RGB565: TGUID = (D1: D3DFMT_R5G6B5; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_RGB8: TGUID = (D1: D3DFMT_P8; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
 
-    MFVideoFormat_AI44: TGUID = (D1: Ord('A') or (Ord('I') shl 8) or (Ord('4') shl 16) or (Ord('4') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_L8: TGUID = (D1: D3DFMT_L8; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_L16: TGUID = (D1: D3DFMT_L16; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_D16: TGUID = (D1: D3DFMT_D16; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+
+
+    MFVideoFormat_AI44: TGUID = (D1: Ord('A') or (Ord('I') shl 8) or (Ord('4') shl 16) or (Ord('4') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_AYUV: TGUID = (D1: Ord('A') or (Ord('Y') shl 8) or (Ord('U') shl 16) or (Ord('V') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_AYUV: TGUID = (D1: Ord('A') or (Ord('Y') shl 8) or (Ord('U') shl 16) or (Ord('V') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_YUY2: TGUID = (D1: Ord('Y') or (Ord('U') shl 8) or (Ord('Y') shl 16) or (Ord('2') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_YUY2: TGUID = (D1: Ord('Y') or (Ord('U') shl 8) or (Ord('Y') shl 16) or (Ord('2') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_YVYU: TGUID = (D1: Ord('Y') or (Ord('V') shl 8) or (Ord('Y') shl 16) or (Ord('U') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_YVYU: TGUID = (D1: Ord('Y') or (Ord('V') shl 8) or (Ord('Y') shl 16) or (Ord('U') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_YVU9: TGUID = (D1: Ord('Y') or (Ord('V') shl 8) or (Ord('U') shl 16) or (Ord('9') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_YVU9: TGUID = (D1: Ord('Y') or (Ord('V') shl 8) or (Ord('U') shl 16) or (Ord('9') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_UYVY: TGUID = (D1: Ord('U') or (Ord('Y') shl 8) or (Ord('V') shl 16) or (Ord('Y') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_UYVY: TGUID = (D1: Ord('U') or (Ord('Y') shl 8) or (Ord('V') shl 16) or (Ord('Y') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_NV11: TGUID = (D1: Ord('N') or (Ord('V') shl 8) or (Ord('1') shl 16) or (Ord('1') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_NV11: TGUID = (D1: Ord('N') or (Ord('V') shl 8) or (Ord('1') shl 16) or (Ord('1') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_NV12: TGUID = (D1: Ord('N') or (Ord('V') shl 8) or (Ord('1') shl 16) or (Ord('2') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_NV12: TGUID = (D1: Ord('N') or (Ord('V') shl 8) or (Ord('1') shl 16) or (Ord('2') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_YV12: TGUID = (D1: Ord('Y') or (Ord('V') shl 8) or (Ord('1') shl 16) or (Ord('2') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_YV12: TGUID = (D1: Ord('Y') or (Ord('V') shl 8) or (Ord('1') shl 16) or (Ord('2') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_I420: TGUID = (D1: Ord('I') or (Ord('4') shl 8) or (Ord('2') shl 16) or (Ord('0') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_I420: TGUID = (D1: Ord('I') or (Ord('4') shl 8) or (Ord('2') shl 16) or (Ord('0') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_IYUV: TGUID = (D1: Ord('I') or (Ord('Y') shl 8) or (Ord('U') shl 16) or (Ord('V') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_IYUV: TGUID = (D1: Ord('I') or (Ord('Y') shl 8) or (Ord('U') shl 16) or (Ord('V') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_Y210: TGUID = (D1: Ord('Y') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_Y210: TGUID = (D1: Ord('Y') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_Y216: TGUID = (D1: Ord('Y') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_Y216: TGUID = (D1: Ord('Y') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_Y410: TGUID = (D1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_Y410: TGUID = (D1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_Y416: TGUID = (D1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_Y416: TGUID = (D1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_Y41P: TGUID = (D1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('P') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_Y41P: TGUID = (D1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('P') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_Y41T: TGUID = (D1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('T') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_Y41T: TGUID = (D1: Ord('Y') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('T') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_Y42T: TGUID = (D1: Ord('Y') or (Ord('4') shl 8) or (Ord('2') shl 16) or (Ord('T') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_Y42T: TGUID = (D1: Ord('Y') or (Ord('4') shl 8) or (Ord('2') shl 16) or (Ord('T') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_P210: TGUID = (D1: Ord('P') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_P210: TGUID = (D1: Ord('P') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_P216: TGUID = (D1: Ord('P') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_P216: TGUID = (D1: Ord('P') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_P010: TGUID = (D1: Ord('P') or (Ord('0') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_P010: TGUID = (D1: Ord('P') or (Ord('0') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_P016: TGUID = (D1: Ord('P') or (Ord('0') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_P016: TGUID = (D1: Ord('P') or (Ord('0') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_v210: TGUID = (D1: Ord('v') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_v210: TGUID = (D1: Ord('v') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_v216: TGUID = (D1: Ord('v') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_v216: TGUID = (D1: Ord('v') or (Ord('2') shl 8) or (Ord('1') shl 16) or (Ord('6') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_v410: TGUID = (D1: Ord('v') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_v410: TGUID = (D1: Ord('v') or (Ord('4') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_MP43: TGUID = (D1: Ord('M') or (Ord('P') shl 8) or (Ord('4') shl 16) or (Ord('3') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_MP43: TGUID = (D1: Ord('M') or (Ord('P') shl 8) or (Ord('4') shl 16) or (Ord('3') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_MP4S: TGUID = (D1: Ord('M') or (Ord('P') shl 8) or (Ord('4') shl 16) or (Ord('S') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_MP4S: TGUID = (D1: Ord('M') or (Ord('P') shl 8) or (Ord('4') shl 16) or (Ord('S') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_M4S2: TGUID = (D1: Ord('M') or (Ord('4') shl 8) or (Ord('S') shl 16) or (Ord('2') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_M4S2: TGUID = (D1: Ord('M') or (Ord('4') shl 8) or (Ord('S') shl 16) or (Ord('2') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_MP4V: TGUID = (D1: Ord('M') or (Ord('P') shl 8) or (Ord('4') shl 16) or (Ord('V') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_MP4V: TGUID = (D1: Ord('M') or (Ord('P') shl 8) or (Ord('4') shl 16) or (Ord('V') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_WMV1: TGUID = (D1: Ord('W') or (Ord('M') shl 8) or (Ord('V') shl 16) or (Ord('1') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_WMV1: TGUID = (D1: Ord('W') or (Ord('M') shl 8) or (Ord('V') shl 16) or (Ord('1') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_WMV2: TGUID = (D1: Ord('W') or (Ord('M') shl 8) or (Ord('V') shl 16) or (Ord('2') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_WMV2: TGUID = (D1: Ord('W') or (Ord('M') shl 8) or (Ord('V') shl 16) or (Ord('2') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_WMV3: TGUID = (D1: Ord('W') or (Ord('M') shl 8) or (Ord('V') shl 16) or (Ord('3') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_WMV3: TGUID = (D1: Ord('W') or (Ord('M') shl 8) or (Ord('V') shl 16) or (Ord('3') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_WVC1: TGUID = (D1: Ord('W') or (Ord('V') shl 8) or (Ord('C') shl 16) or (Ord('1') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_WVC1: TGUID = (D1: Ord('W') or (Ord('V') shl 8) or (Ord('C') shl 16) or (Ord('1') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_MSS1: TGUID = (D1: Ord('M') or (Ord('S') shl 8) or (Ord('S') shl 16) or (Ord('1') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_MSS1: TGUID = (D1: Ord('M') or (Ord('S') shl 8) or (Ord('S') shl 16) or (Ord('1') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_MSS2: TGUID = (D1: Ord('M') or (Ord('S') shl 8) or (Ord('S') shl 16) or (Ord('2') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_MSS2: TGUID = (D1: Ord('M') or (Ord('S') shl 8) or (Ord('S') shl 16) or (Ord('2') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_MPG1: TGUID = (D1: Ord('M') or (Ord('P') shl 8) or (Ord('G') shl 16) or (Ord('1') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_MPG1: TGUID = (D1: Ord('M') or (Ord('P') shl 8) or (Ord('G') shl 16) or (Ord('1') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_DVSL: TGUID = (D1: Ord('d') or (Ord('v') shl 8) or (Ord('s') shl 16) or (Ord('l') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_DVSL: TGUID = (D1: Ord('d') or (Ord('v') shl 8) or (Ord('s') shl 16) or (Ord('l') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_DVSD: TGUID = (D1: Ord('d') or (Ord('v') shl 8) or (Ord('s') shl 16) or (Ord('d') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_DVSD: TGUID = (D1: Ord('d') or (Ord('v') shl 8) or (Ord('s') shl 16) or (Ord('d') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_DVHD: TGUID = (D1: Ord('d') or (Ord('v') shl 8) or (Ord('h') shl 16) or (Ord('d') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_DVHD: TGUID = (D1: Ord('d') or (Ord('v') shl 8) or (Ord('h') shl 16) or (Ord('d') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_DV25: TGUID = (D1: Ord('d') or (Ord('v') shl 8) or (Ord('2') shl 16) or (Ord('5') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_DV25: TGUID = (D1: Ord('d') or (Ord('v') shl 8) or (Ord('2') shl 16) or (Ord('5') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_DV50: TGUID = (D1: Ord('d') or (Ord('v') shl 8) or (Ord('5') shl 16) or (Ord('0') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_DV50: TGUID = (D1: Ord('d') or (Ord('v') shl 8) or (Ord('5') shl 16) or (Ord('0') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_DVH1: TGUID = (D1: Ord('d') or (Ord('v') shl 8) or (Ord('h') shl 16) or (Ord('1') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_DVH1: TGUID = (D1: Ord('d') or (Ord('v') shl 8) or (Ord('h') shl 16) or (Ord('1') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_DVC: TGUID = (D1: Ord('d') or (Ord('v') shl 8) or (Ord('c') shl 16) or (Ord(' ') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_DVC: TGUID = (D1: Ord('d') or (Ord('v') shl 8) or (Ord('c') shl 16) or (Ord(' ') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
     MFVideoFormat_H264: TGUID = (D1: Ord('H') or (Ord('2') shl 8) or (Ord('6') shl 16) or (Ord('4') shl 24);
         // assume MFVideoFormat_H264 is frame aligned. that is, each input sample has one complete compressed frame (one frame picture, two field pictures or a single unpaired field picture)
-        D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_H265: TGUID = (D1: Ord('H') or (Ord('2') shl 8) or (Ord('6') shl 16) or (Ord('5') shl 24); D2: 0000; D3: 0010;
+        D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_H265: TGUID = (D1: Ord('H') or (Ord('2') shl 8) or (Ord('6') shl 16) or (Ord('5') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_MJPG: TGUID = (D1: Ord('M') or (Ord('J') shl 8) or (Ord('P') shl 16) or (Ord('G') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_MJPG: TGUID = (D1: Ord('M') or (Ord('J') shl 8) or (Ord('P') shl 16) or (Ord('G') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_420O: TGUID = (D1: Ord('4') or (Ord('2') shl 8) or (Ord('0') shl 16) or (Ord('O') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_420O: TGUID = (D1: Ord('4') or (Ord('2') shl 8) or (Ord('0') shl 16) or (Ord('O') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_HEVC: TGUID = (D1: Ord('H') or (Ord('E') shl 8) or (Ord('V') shl 16) or (Ord('C') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_HEVC: TGUID = (D1: Ord('H') or (Ord('E') shl 8) or (Ord('V') shl 16) or (Ord('C') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_HEVC_ES: TGUID = (D1: Ord('H') or (Ord('E') shl 8) or (Ord('V') shl 16) or (Ord('S') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_HEVC_ES: TGUID = (D1: Ord('H') or (Ord('E') shl 8) or (Ord('V') shl 16) or (Ord('S') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_VP80: TGUID = (D1: Ord('V') or (Ord('P') shl 8) or (Ord('8') shl 16) or (Ord('0') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_VP80: TGUID = (D1: Ord('V') or (Ord('P') shl 8) or (Ord('8') shl 16) or (Ord('0') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_VP90: TGUID = (D1: Ord('V') or (Ord('P') shl 8) or (Ord('9') shl 16) or (Ord('0') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_VP90: TGUID = (D1: Ord('V') or (Ord('P') shl 8) or (Ord('9') shl 16) or (Ord('0') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFVideoFormat_H263: TGUID = (D1: Ord('H') or (Ord('2') shl 8) or (Ord('6') shl 16) or (Ord('3') shl 24); D2: 0000; D3: 0010;
+    MFVideoFormat_ORAW: TGUID = (D1: Ord('O') or (Ord('R') shl 8) or (Ord('A') shl 16) or (Ord('W') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_H263: TGUID = (D1: Ord('H') or (Ord('2') shl 8) or (Ord('6') shl 16) or (Ord('3') shl 24); D2: $0000; D3: $0010;
+        D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+
+    //{$IF  (WDK_NTDDI_VERSION >= NTDDI_WIN10)}
+    MFVideoFormat_A2R10G10B10: TGUID = (D1: D3DFMT_A2B10G10R10; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_A16B16G16R16F: TGUID = (D1: D3DFMT_A16B16G16R16F; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    //{$ENDIF}
+
+    //{$IF  (WDK_NTDDI_VERSION >= NTDDI_WIN10_RS3)}
+    MFVideoFormat_VP10: TGUID = (D1: Ord('V') or (Ord('P') shl 8) or (Ord('1') shl 16) or (Ord('0') shl 24); D2: $0000; D3: $0010;
+        D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFVideoFormat_AV1: TGUID = (D1: Ord('A') or (Ord('V') shl 8) or (Ord('0') shl 16) or (Ord('1') shl 24); D2: $0000; D3: $0010;
+        D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    //{$ENDIF}
+
 
 
     // audio media types
 
-    MFAudioFormat_Base: TGUID = (D1: $00000000; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_Base: TGUID = (D1: $00000000; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
 
-    MFAudioFormat_PCM: TGUID = (D1: WAVE_FORMAT_PCM; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_Float: TGUID = (D1: WAVE_FORMAT_IEEE_FLOAT; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_DTS: TGUID = (D1: WAVE_FORMAT_DTS; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_Dolby_AC3_SPDIF: TGUID = (D1: WAVE_FORMAT_DOLBY_AC3_SPDIF; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_DRM: TGUID = (D1: WAVE_FORMAT_DRM; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_WMAudioV8: TGUID = (D1: WAVE_FORMAT_WMAUDIO2; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_WMAudioV9: TGUID = (D1: WAVE_FORMAT_WMAUDIO3; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_WMAudio_Lossless: TGUID = (D1: WAVE_FORMAT_WMAUDIO_LOSSLESS; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_WMASPDIF: TGUID = (D1: WAVE_FORMAT_WMASPDIF; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_MSP1: TGUID = (D1: WAVE_FORMAT_WMAVOICE9; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_MP3: TGUID = (D1: WAVE_FORMAT_MPEGLAYER3; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_MPEG: TGUID = (D1: WAVE_FORMAT_MPEG; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_AAC: TGUID = (D1: WAVE_FORMAT_MPEG_HEAAC; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_ADTS: TGUID = (D1: WAVE_FORMAT_MPEG_ADTS_AAC; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_AMR_NB: TGUID = (D1: WAVE_FORMAT_AMR_NB; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_AMR_WB: TGUID = (D1: WAVE_FORMAT_AMR_WB; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_AMR_WP: TGUID = (D1: WAVE_FORMAT_AMR_WP; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_FLAC: TGUID = (D1: WAVE_FORMAT_FLAC; D2: 0000; D3: 0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
-    MFAudioFormat_ALAC: TGUID = (D1: Ord('a') or (Ord('l') shl 8) or (Ord('a') shl 16) or (Ord('c') shl 24); D2: 0000; D3: 0010;
+    MFAudioFormat_PCM: TGUID = (D1: WAVE_FORMAT_PCM; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_Float: TGUID = (D1: WAVE_FORMAT_IEEE_FLOAT; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_DTS: TGUID = (D1: WAVE_FORMAT_DTS; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_Dolby_AC3_SPDIF: TGUID = (D1: WAVE_FORMAT_DOLBY_AC3_SPDIF; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_DRM: TGUID = (D1: WAVE_FORMAT_DRM; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_WMAudioV8: TGUID = (D1: WAVE_FORMAT_WMAUDIO2; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_WMAudioV9: TGUID = (D1: WAVE_FORMAT_WMAUDIO3; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_WMAudio_Lossless: TGUID = (D1: WAVE_FORMAT_WMAUDIO_LOSSLESS; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_WMASPDIF: TGUID = (D1: WAVE_FORMAT_WMASPDIF; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_MSP1: TGUID = (D1: WAVE_FORMAT_WMAVOICE9; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_MP3: TGUID = (D1: WAVE_FORMAT_MPEGLAYER3; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_MPEG: TGUID = (D1: WAVE_FORMAT_MPEG; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_AAC: TGUID = (D1: WAVE_FORMAT_MPEG_HEAAC; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_ADTS: TGUID = (D1: WAVE_FORMAT_MPEG_ADTS_AAC; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_AMR_NB: TGUID = (D1: WAVE_FORMAT_AMR_NB; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_AMR_WB: TGUID = (D1: WAVE_FORMAT_AMR_WB; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_AMR_WP: TGUID = (D1: WAVE_FORMAT_AMR_WP; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_FLAC: TGUID = (D1: WAVE_FORMAT_FLAC; D2: $0000; D3: $0010; D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
+    MFAudioFormat_ALAC: TGUID = (D1: Ord('a') or (Ord('l') shl 8) or (Ord('a') shl 16) or (Ord('c') shl 24); D2: $0000; D3: $0010;
         D4: ($80, $00, $00, $AA, $00, $38, $9B, $71));
 {$ENDIF}
 
@@ -959,6 +1190,10 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
     MFAudioFormat_Dolby_AC3: TGUID = '{e06d802c-db46-11cf-b4d1-0080056cbbea}'; // == MEDIASUBTYPE_DOLBY_AC3 defined in ksuuids.h
     MFAudioFormat_Dolby_DDPlus: TGUID = '{a7fb87af-2d02-42fb-a4d4-05cd93843bdd}'; // == MEDIASUBTYPE_DOLBY_DDPLUS defined in wmcodecdsp.h
     MFAudioFormat_Vorbis: TGUID = '{8D2FD10B-5841-4a6b-8905-588FEC1ADED9}'; // {8D2FD10B-5841-4a6b-8905-588FEC1ADED9}
+    //{$IF  (NTDDI_VERSION >= NTDDI_WIN10_RS2)}
+    MFAudioFormat_Float_SpatialObjects: TGUID = '{fa39cd94-bc64-4ab1-9b71-dcd09d5a7e7a}';
+    //{$ENDIF} // (NTDDI_VERSION >= NTDDI_WIN10_RS2)
+
 
     // LPCM audio with headers for encapsulation in an MPEG2 bitstream
     MFAudioFormat_LPCM: TGUID = '{e06d8032-db46-11cf-b4d1-00805f6cbbea}'; // == MEDIASUBTYPE_LPCM defined in ksmedia.h
@@ -968,6 +1203,7 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
     MFAudioFormat_ADTS_HDCP: TGUID = '{da4963a3-14d8-4dcf-92b7-193eb84363db}';
     MFAudioFormat_Base_HDCP: TGUID = '{3884b5bc-e277-43fd-983d-038aa8d9b605}';
     MFVideoFormat_H264_HDCP: TGUID = '{5d0ce9dd-9817-49da-bdfd-f5f5b98f18a6}';
+    MFVideoFormat_HEVC_HDCP: TGUID = '{3cfe0fe6-05c4-47dc-9d70-4bdb2959720f}';
     MFVideoFormat_Base_HDCP: TGUID = '{eac3b9d5-bd14-4237-8f1f-bab428e49312}';
 
 
@@ -978,6 +1214,9 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
 
 
     // Subtitle media types
+
+    // {2006F94F-29CA-4195-B8DB-00DED8FF0C97}      MFSubtitleFormat_XML
+    MFSubtitleFormat_XML: TGUID = '{2006F94F-29CA-4195-B8DB-00DED8FF0C97}';
 
     // {73E73992-9a10-4356-9557-7194E91E3E54}      MFSubtitleFormat_TTML
     MFSubtitleFormat_TTML: TGUID = '{73e73992-9a10-4356-9557-7194e91e3e54}';
@@ -997,13 +1236,16 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
     // {1BB3D849-6614-4D80-8882-ED24AA82DA92}      MFSubtitleFormat_CustomUserData
     MFSubtitleFormat_CustomUserData: TGUID = '{1bb3d849-6614-4d80-8882-ed24aa82da92}';
 
+    MFBinaryFormat_Base: TGUID = '{00000000-bf10-48b4-bc18-593dc1db950f}';
+
+    MFBinaryFormat_GPMD: TGUID = (D1: Ord('g') or (Ord('p') shl 8) or (Ord('m') shl 16) or (Ord('d') shl 24); D2: $bf10; D3: $48b4;
+        D4: ($bc, $18, $59, $3d, $c1, $db, $95, $f));
+
     /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////  Media Type Attributes GUIDs ////////////////////////////
     /// /////////////////////////////////////////////////////////////////////////////
 
-
     // GUIDs for IMFMediaType properties - prefix 'MF_MT_' - basic prop type in {},
     // with type to cast to in ().
-
 
     // core info for all types
 
@@ -1075,11 +1317,45 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
     // the attribute MF_MT_VIDEO_ROTATION as MFVideoRotationFormat_270 accordingly.
     MF_MT_VIDEO_ROTATION: TGUID = '{c380465d-2271-428c-9b83-ecea3b4a85c1}';
 
+
+    //{$IF  (NTDDI_VERSION >= NTDDI_WIN10_RS2)}
+    MF_DEVICESTREAM_MULTIPLEXED_MANAGER: TGUID = '{6ea542b0-281f-4231-a464-fe2f5022501c}';
+    MF_MEDIATYPE_MULTIPLEXED_MANAGER: TGUID = '{13c78fb5-f275-4ea0-bb5f-0249832b0d6e}';
+    MFSampleExtension_MULTIPLEXED_MANAGER: TGUID = '{8dcdee79-6b5a-4c45-8db9-20b395f02fcf}';
+    //{$ENDIF}
+
+
     // MF_MT_SECURE     {c5acc4fd-0304-4ecf-809f-47bc97ff63bd }
     // Type: UINT32 (BOOL)
     // Description: MF_MT_SECURE attribute indicates that the content will be using
     // secure D3D surfaces.  These surfaces can only be accessed by trusted hardware.
     MF_MT_SECURE: TGUID = '{c5acc4fd-0304-4ecf-809f-47bc97ff63bd}';
+
+
+    // MF_DEVICESTREAM_ATTRIBUTE_FRAMESOURCE_TYPES {17145FD1-1B2B-423C-8001-2B6833ED3588}
+    // Type: UINT32 (enum type defined in MFFrameSourceTypes)
+    // Description: The value of this attribute is a enum value, describing the sensor types.
+    // For backward compatibility, when this attribute was not defined on in a media type, it is assumed to be MFFrameSourceTypes::Color.
+    MF_DEVICESTREAM_ATTRIBUTE_FRAMESOURCE_TYPES: TGUID = '{17145fd1-1b2b-423c-8001-2b6833ed3588}';
+
+    // MF_MT_ALPHA_MODE {5D959B0D-4CBF-4D04-919F-3F5F7F284211}
+    // Type: UINT32
+    // Description: To differentiate the usage of alpha channel in such video formats, a new attribute MF_MT_ALPHA_MODE is designed to describe this information.
+    // The value of this attribute can be cast to DXGI_ALPHA_MODE.
+    // If this attribute is not present, for backward compatibility, the value is DXGI_ALPHA_MODE_STRAIGHT for video format supporting alpha channel,
+    // such as ARGB32, or DXGI_ALPHA_MODE_IGNORE for video format without alpha channel, such as RGB32.
+    MF_MT_ALPHA_MODE: TGUID = '{5D959B0D-4CBF-4D04-919F-3F5F7F284211}';
+
+    // MF_MT_DEPTH_MEASUREMENT {FD5AC489-0917-4BB6-9D54-3122BF70144B}
+    // Type : UINT32  (MFDepthMeasurement)
+    // Description: If this attribute is not present, by default it is DistanceToFocalPlane, illustrated by following diagram.
+    MF_MT_DEPTH_MEASUREMENT: TGUID = '{fd5ac489-0917-4bb6-9d54-3122bf70144b}';
+
+    // MF_MT_DEPTH_VALUE_UNIT    {21a800f5-3189-4797-beba-f13cd9a31a5e}
+    // Type : UINT64
+    // Description: MF_MT_DEPTH_VALUE_UNIT attribute indicates scale of the depth value in nanometers.
+    // For each pixel in depth frame, the actual depth measured in nanometers is the pixel value multiplied by this attribute.
+    MF_MT_DEPTH_VALUE_UNIT: TGUID = '{21a800f5-3189-4797-beba-f13cd9a31a5e}';
 
 
     // MF_MT_VIDEO_NO_FRAME_ORDERING {3F5B106F-6BC2-4EE3-B7ED-8902C18F5351}
@@ -1108,6 +1384,72 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
     // it is an attribute set on input media type
 
     MF_MT_VIDEO_H264_NO_FMOASO: TGUID = '{ed461cd6-ec9f-416a-a8a3-26d7d31018d7}';
+
+
+
+    // TODO: switch to NTDDI_WIN10_RS3 when _NT_TARGET_VERSION is updated to support RS3
+    //{$IF  (NTDDI_VERSION >= NTDDI_WIN10_RS2)}
+
+
+
+    // Renderer Extensions
+
+
+    // MFSampleExtension_ForwardedDecodeUnits {424C754C-97C8-48d6-8777-FC41F7B60879}
+    // Type: IUnknown
+    // This is an object of type IMFCollection containing IMFSample objects
+    //  which contain NALU/SEI forwarded by a decoder.
+    //  Contains all custom NALU/SEI since previous frame with emulation prevention bytes removed.
+    // see: MF_MT_FORWARD_CUSTOM_NALU, MF_MT_FORWARD_CUSTOM_SEI
+    MFSampleExtension_ForwardedDecodeUnits: TGUID = '{424c754c-97c8-48d6-8777-fc41f7b60879}';
+
+    // MFSampleExtension_TargetGlobalLuminance {3F60EF36-31EF-4daf-8360-940397E41EF3}
+    // Type: UINT32
+    // Value in Nits that specifies the targeted global backlight luminance for
+    //  the associated video frame.
+    MFSampleExtension_TargetGlobalLuminance: TGUID = '{3f60ef36-31ef-4daf-8360-940397e41ef3}';
+
+
+
+    // MFSampleExtension_ForwardedDecodeUnitType {089E57C7-47D3-4a26-BF9C-4B64FAFB5D1E}
+    // Type: UINT32 (oneof MF_CUSTOM_DECODE_UNIT_TYPE)
+    // Attached to IMFSample objects in MFSampleExtension_ForwardedDecodeUnits, specifies
+    //  what type of unit is attached: SEI or NAL
+    MFSampleExtension_ForwardedDecodeUnitType: TGUID = '{089e57c7-47d3-4a26-bf9c-4b64fafb5d1e}';
+
+    // MF_MT_FORWARD_CUSTOM_NALU {ED336EFD-244F-428d-9153-28F399458890}
+    // Type: UINT32
+    // Specifies the NAL unit type to forward on output samples of the decoder.
+    // If the decoder parses the specified NALU then it will not forwarded.
+    // See: MFSampleExtension_ForwardedDecodeUnits
+    MF_MT_FORWARD_CUSTOM_NALU: TGUID = '{ed336efd-244f-428d-9153-28f399458890}';
+
+    // MF_MT_FORWARD_CUSTOM_SEI {E27362F1-B136-41d1-9594-3A7E4FEBF2D1}
+    // Type: UINT32
+    // Specifies the SEI type to forward on output samples of the decoder
+    // If the decoder parses the specified SEI then it will not be forwarded.
+    // See: MFSampleExtension_ForwardedDecodeUnits
+    MF_MT_FORWARD_CUSTOM_SEI: TGUID = '{e27362f1-b136-41d1-9594-3a7e4febf2d1}';
+
+    // MF_MT_VIDEO_RENDERER_EXTENSION_PROFILE {8437D4B9-D448-4fcd-9B6B-839BF96C7798}
+    // Type: LPCWSTR
+    // Contains a string that matches an entry in a MediaRendererEffect Manifest's
+    //  VideoRendererExtensionProfiles list to select which effect to load
+    MF_MT_VIDEO_RENDERER_EXTENSION_PROFILE: TGUID = '{8437d4b9-d448-4fcd-9b6b-839bf96c7798}';
+
+    //{$ENDIF} // (NTDDI_VERSION >= NTDDI_WIN10_RS2)
+
+    //{$IF  (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+
+    // MF_DECODER_FWD_CUSTOM_SEI_DECODE_ORDER {f13bbe3c-36d4-410a-b985-7a951a1e6294}
+    // Type: UINT32
+    // Specifies that the SEI unit type to forward on output samples of the decoder
+    // shall be sent out in decode order (i.e. ahead of time)
+    // This is required for downstream apps to process the SEI in advance of receiving
+    // the frame it is meant to be attached to
+    MF_DECODER_FWD_CUSTOM_SEI_DECODE_ORDER: TGUID = '{f13bbe3c-36d4-410a-b985-7a951a1e6294}';
+
+    //{$ENDIF} /* (NTDDI_VERSION >= NTDDI_WIN10_RS4) */
 
 
     // AUDIO data
@@ -1180,6 +1522,32 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
     // {8B81ADAE-4B5A-4D40-8022-F38D09CA3C5C} MF_MT_AUDIO_FLAC_MAX_BLOCK_SIZE       {UINT32}
     MF_MT_AUDIO_FLAC_MAX_BLOCK_SIZE: TGUID = '{8b81adae-4b5a-4d40-8022-f38d09ca3c5c}';
 
+    //{$IF  (NTDDI_VERSION >= NTDDI_WIN10_RS2)}
+
+    // AUDIO - Spatial Audio Sample extra data
+
+
+    // {DCFBA24A-2609-4240-A721-3FAEA76A4DF9} MF_MT_SPATIAL_AUDIO_MAX_DYNAMIC_OBJECTS     {UINT32}
+    MF_MT_SPATIAL_AUDIO_MAX_DYNAMIC_OBJECTS: TGUID = '{dcfba24a-2609-4240-a721-3faea76a4df9}';
+
+    // {2AB71BC0-6223-4BA7-AD64-7B94B47AE792} MF_MT_SPATIAL_AUDIO_OBJECT_METADATA_FORMAT_ID     {GUID}
+    MF_MT_SPATIAL_AUDIO_OBJECT_METADATA_FORMAT_ID: TGUID = '{2ab71bc0-6223-4ba7-ad64-7b94b47ae792}';
+
+    // {094BA8BE-D723-489F-92FA-766777B34726} MF_MT_SPATIAL_AUDIO_OBJECT_METADATA_LENGTH  {UINT32}
+    MF_MT_SPATIAL_AUDIO_OBJECT_METADATA_LENGTH: TGUID = '{094ba8be-d723-489f-92fa-766777b34726}';
+
+    // {11AA80B4-E0DA-47C6-8060-96C1259AE50D} MF_MT_SPATIAL_AUDIO_MAX_METADATA_ITEMS {UINT32}
+    MF_MT_SPATIAL_AUDIO_MAX_METADATA_ITEMS: TGUID = '{11aa80b4-e0da-47c6-8060-96c1259ae50d}';
+
+    // {83E96EC9-1184-417E-8254-9F269158FC06} MF_MT_SPATIAL_AUDIO_MIN_METADATA_ITEM_OFFSET_SPACING {UINT32}
+    MF_MT_SPATIAL_AUDIO_MIN_METADATA_ITEM_OFFSET_SPACING: TGUID = '{83e96ec9-1184-417e-8254-9f269158fc06}';
+
+    // {6842F6E7-D43E-4EBB-9C9C-C96F41784863} MF_MT_SPATIAL_AUDIO_DATA_PRESENT {UINT32 (BOOL)}
+    MF_MT_SPATIAL_AUDIO_DATA_PRESENT: TGUID = '{6842f6e7-d43e-4ebb-9c9c-c96f41784863}';
+
+    //{$ENDIF} // (NTDDI_VERSION >= NTDDI_WIN10_RS2)
+
+
 
     // VIDEO core data
 
@@ -1215,6 +1583,53 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
 
     // {dbfbe4d7-0740-4ee0-8192-850ab0e21935}   MF_MT_VIDEO_PRIMARIES           {UINT32 (oneof MFVideoPrimaries)}
     MF_MT_VIDEO_PRIMARIES: TGUID = '{dbfbe4d7-0740-4ee0-8192-850ab0e21935}';
+
+    // TODO: switch to RS define once it exists (see: 5312604)
+    //{$IF  (WINVER >= _WIN32_WINNT_WIN10)}
+
+    // MF_MT_MAX_LUMINANCE_LEVEL specifies the maximum luminance level of the content in Nits.
+    // Has the same semantics as MaxCLL as defined in CEA-861.3
+
+    // {50253128-C110-4de4-98AE-46A324FAE6DA}   MF_MT_MAX_LUMINANCE_LEVEL   {UINT32}
+    MF_MT_MAX_LUMINANCE_LEVEL: TGUID = '{50253128-c110-4de4-98ae-46a324fae6da}';
+
+
+    // MF_MT_MAX_FRAME_AVERAGE_LUMINANCE_LEVEL specifies the maximum average per-frame
+    // luminance level of the content in Nits.
+    // Has the same semantics as MaxFALL as defined in CEA-861.3
+
+    // {58D4BF57-6F52-4733-A195-A9E29ECF9E27}   MF_MT_MAX_FRAME_AVERAGE_LUMINANCE_LEVEL  {UINT32}
+    MF_MT_MAX_FRAME_AVERAGE_LUMINANCE_LEVEL: TGUID = '{58d4bf57-6f52-4733-a195-a9e29ecf9e27}';
+
+
+    // MF_MT_MAX_MASTERING_LUMINANCE specifies the maximum luminance of the display
+    // the content was authored on in Nits.
+    // Has the same semantics as max_display_mastering_luminance as defined in ST.2086
+
+    // {D6C6B997-272F-4ca1-8D00-8042111A0FF6} MF_MT_MAX_MASTERING_LUMINANCE {UINT32}
+    MF_MT_MAX_MASTERING_LUMINANCE: TGUID = '{d6c6b997-272f-4ca1-8d00-8042111a0ff6}';
+
+
+    // MF_MT_MIN_MASTERING_LUMINANCE specifies the maximum luminance of the display
+    // the content was authored on in 0.0001 Nits.
+    // Has the same semantics as min_display_mastering_luminance as defined in ST.2086
+
+    // {839A4460-4E7E-4b4f-AE79-CC08905C7B27} MF_MT_MIN_MASTERING_LUMINANCE {UINT32}
+    MF_MT_MIN_MASTERING_LUMINANCE: TGUID = '{839a4460-4e7e-4b4f-ae79-cc08905c7b27}';
+
+
+    // MF_MT_DECODER_USE_MAX_RESOLUTION hints the decoder should allocate worst
+    // case supported resolution whenever possible
+    // {4c547c24-af9a-4f38-96ad-978773cf53e7} MF_MT_DECODER_USE_MAX_RESOLUTION {UINT32 (BOOL)}
+    MF_MT_DECODER_USE_MAX_RESOLUTION: TGUID = '{4c547c24-af9a-4f38-96ad-978773cf53e7}';
+
+
+    // MF_MT_DECODER_MAX_DPB_COUNT is a value that hints to the decoder that the current
+    // decoding session will never require more than the specified number of decode surfaces
+    // {67BE144C-88B7-4CA9-9628-C808D5262217} MF_MT_DECODER_MAX_DPB_COUNT {UINT32}
+    MF_MT_DECODER_MAX_DPB_COUNT: TGUID = '{67be144c-88b7-4ca9-9628-c808d5262217}';
+
+    //{$ENDIF} // (WINVER > _WIN32_WINNT_WIN10)
 
     // {47537213-8cfb-4722-aa34-fbc9e24d77b8}   MF_MT_CUSTOM_VIDEO_PRIMARIES    {BLOB (MT_CUSTOM_VIDEO_PRIMARIES)}
     MF_MT_CUSTOM_VIDEO_PRIMARIES: TGUID = '{47537213-8cfb-4722-aa34-fbc9e24d77b8}';
@@ -1255,6 +1670,11 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
     // {a505d3ac-f930-436e-8ede-93a509ce23b2} MF_MT_OUTPUT_BUFFER_NUM {UINT32}
     MF_MT_OUTPUT_BUFFER_NUM: TGUID = '{a505d3ac-f930-436e-8ede-93a509ce23b2}';
 
+    // TODO: Fix when GovM has the right ifdef check
+    //{$IF  (WINVER >= _WIN32_WINNT_WIN10)}
+    /// {$bb12d222,$2bdb,$425e,$91,$ec,$23,$08,$e1,$89,$a5,$8f}   MF_MT_REALTIME_CONTENT UINT32 (0 or 1)
+    MF_MT_REALTIME_CONTENT: TGUID = '{bb12d222-2bdb-425e-91ec-2308e189a58f}';
+    //{$ENDIF} // (WINVER >= _WIN32_WINNT_WIN10
 
     // VIDEO - uncompressed format data
 
@@ -1363,6 +1783,10 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
     MF_MT_IN_BAND_PARAMETER_SET: TGUID = '{75da5090-910b-4a03-896c-7b898feea5af}';
 
 
+    //{54F486DD-9327-4F6D-80AB-6F709EBB4CCE}          {UINT32, FourCC of the track type in MPEG-4 used for binary streams}
+    MF_MT_MPEG4_TRACK_TYPE: TGUID = '{54f486dd-9327-4f6d-80ab-6f709ebb4cce}';
+
+
     // INTERLEAVED - DV extra data
 
     // {84bd5d88-0fb8-4ac8-be4b-a8848bef98f3}   MF_MT_DV_AAUX_SRC_PACK_0        {UINT32}
@@ -1382,6 +1806,10 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
 
     // {2f84e1c4-0da1-4788-938e-0dfbfbb34b48}   MF_MT_DV_VAUX_CTRL_PACK         {UINT32}
     MF_MT_DV_VAUX_CTRL_PACK: TGUID = '{2f84e1c4-0da1-4788-938e-0dfbfbb34b48}';
+
+
+    // ARBITRARY
+
 
     // {9E6BD6F5-0109-4f95-84AC-9309153A19FC}   MF_MT_ARBITRARY_HEADER          {MT_ARBITRARY_HEADER}
     MF_MT_ARBITRARY_HEADER: TGUID = '{9e6bd6f5-0109-4f95-84ac-9309153a19fc}';
@@ -1403,6 +1831,18 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
 
     // {9aa7e155-b64a-4c1d-a500-455d600b6560}   MF_MT_MPEG4_CURRENT_SAMPLE_ENTRY {UINT32}
     MF_MT_MPEG4_CURRENT_SAMPLE_ENTRY: TGUID = '{9aa7e155-b64a-4c1d-a500-455d600b6560}';
+
+
+
+    //{$IF  (NTDDI_VERSION >= NTDDI_WIN10_RS4)}
+
+    // Ambisonics Stream Attribute
+    // The value of this blob must be AMBISONICS_PARAMS structure defined in AudioClient.h
+
+    // {F715CF3E-A964-4C3F-94AE-9D6BA7264641}   MF_SD_AMBISONICS_SAMPLE3D_DESCRIPTION   {BLOB}
+    MF_SD_AMBISONICS_SAMPLE3D_DESCRIPTION: TGUID = '{f715cf3e-a964-4c3f-94ae-9d6ba7264641}';
+
+    //{$ENDIF}
 
 
     // Save original format information for AVI and WAV files
@@ -1436,7 +1876,6 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
     /// ////////////////////////////  Media Type GUIDs //////////////////////////////
     /// /////////////////////////////////////////////////////////////////////////////
 
-
     // Major types
 
     MFMediaType_Default: TGUID = '{81A412E6-8103-4B06-857F-1862781024AC}';
@@ -1450,6 +1889,13 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
     MFMediaType_Binary: TGUID = '{72178C25-E45B-11D5-BC2A-00B0D0F3F4AB}';
     MFMediaType_FileTransfer: TGUID = '{72178C26-E45B-11D5-BC2A-00B0D0F3F4AB}';
     MFMediaType_Stream: TGUID = '{e436eb83-524f-11ce-9f53-0020af0ba770}';
+    MFMediaType_MultiplexedFrames: TGUID = '{6ea542b0-281f-4231-a464-fe2f5022501c}';
+    MFMediaType_Subtitle: TGUID = '{a6d13581-ed50-4e65-ae08-26065576aacc}';
+
+    // TODO: switch to RS define once it exists (see: 5312604)
+    //{$IF  (WINVER >= _WIN32_WINNT_WIN10)
+    MFMediaType_Perception: TGUID = '{597ff6f9-6ea2-4670-85b4-ea84073fe940}';
+    //{$ENDIF} // (WINVER >= _WIN32_WINNT_WIN10)
 
 
     // Image subtypes (MFMediaType_Image major type)
@@ -1471,6 +1917,57 @@ MFT_GFX_DRIVER_VERSION_ID_Attribute: TGUID = '{F34B9093-05E0-4B16-993D-3E2A2CDE6
     AM_MEDIA_TYPE_REPRESENTATION: TGUID = '{e2e42ad2-132c-491e-a268-3c7c2dca181f}';
     FORMAT_MFVideoFormat: TGUID = '{aed4ab2d-7326-43cb-9464-c879cab9c43d}';
 
+
+    // MFStreamExtension_CameraExtrinsics {686196D0-13E2-41D9-9638-EF032C272A52}
+    // Value type: Blob (MFCameraExtrinsics)
+    // Stores camera extrinsics data on the stream's attribute store
+
+    MFStreamExtension_CameraExtrinsics: TGUID = '{686196d0-13e2-41d9-9638-ef032c272a52}';
+
+
+    // MFSampleExtension_CameraExtrinsics {6B761658-B7EC-4C3B-8225-8623CABEC31D}
+    // Value type: Blob (MFCameraExtrinsics)
+    // Stores camera extrinsics data on the sample's (a.k.a frame) attribute store
+
+    MFSampleExtension_CameraExtrinsics: TGUID = '{6b761658-b7ec-4c3b-8225-8623cabec31d}';
+
+
+    // MFStreamExtension_PinholeCameraIntrinsics {DBAC0455-0EC8-4AEF-9C32-7A3EE3456F53}
+    // Value type: Blob (MFPinholeCameraIntrinsics)
+    // Stores camera intrinsics data on stream attribute store
+    MFStreamExtension_PinholeCameraIntrinsics: TGUID = '{dbac0455-0ec8-4aef-9c32-7a3ee3456f53}';
+
+    // MFSampleExtension_PinholeCameraIntrinsics {4EE3B6C5-6A15-4E72-9761-70C1DB8B9FE3}
+    // Value type: Blob (MFPinholeCameraIntrinsics)
+    // Stores camera intrinsics data on the sample's (a.k.a frame) attribute store
+    MFSampleExtension_PinholeCameraIntrinsics: TGUID = '{4ee3b6c5-6a15-4e72-9761-70c1db8b9fe3}';
+
+    // MF_DEVICESTREAM_ATTRIBUTE_FACEAUTH_CAPABILITY
+    // Data type: UINT64
+    // Represents the Capability field of the KSCAMERA_EXTENDEDPROP_HEADER corresponding to the
+    // KSPROPERTY_CAMERACONTROL_EXTENDED_FACEAUTH_MODE extended property control.  If this control
+    // is not supported, this attribute will not be present on the stream.
+    // The capability advertised will only contain the bitwise OR of the available
+    // supported modes defined by the Face Auth DDI in ksmedia.h:
+
+    //      KSCAMERA_EXTENDEDPROP_FACEAUTH_MODE_DISABLED
+    //      KSCAMERA_EXTENDEDPROP_FACEAUTH_MODE_ALTERNATIVE_FRAME_ILLUMINATION
+    //      KSCAMERA_EXTENDEDPROP_FACEAUTH_MODE_BACKGROUND_SUBTRACTION
+    MF_DEVICESTREAM_ATTRIBUTE_FACEAUTH_CAPABILITY: TGUID = '{CB6FD12A-2248-4E41-AD46-E78BB90AB9FC}';
+
+    // MF_DEVICESTREAM_ATTRIBUTE_SECURE_CAPABILITY
+    // Data type: UINT64
+    // Represents the Capability field of the KSCAMERA_EXTENDEDPROP_HEADER corresponding to the
+    // KSPROPERTY_CAMERACONTROL_EXTENDED_SECURE_MODE extended property control.  If this control
+    // is not supported, this attribute will not be present on the stream.
+    // The capability advertised will only contain the bitwise OR of the available
+    // supported modes defined by the Secure DDI in ksmedia.h:
+
+    //      KSCAMERA_EXTENDEDPROP_SECURE_MODE_DISABLED
+    //      KSCAMERA_EXTENDEDPROP_SECURE_MODE_ENABLED
+    MF_DEVICESTREAM_ATTRIBUTE_SECURE_CAPABILITY: TGUID = '{940FD626-EA6E-4684-9840-36BD6EC9FBEF}';
+
+
 type
 
     // MF workitem functions
@@ -1478,22 +1975,24 @@ type
     TMFWORKITEM_KEY = UINT64;
     TMFPERIODICCALLBACK = function(pContext: IUnknown): Pointer;
 
-    // MFASYNC_WORKQUEUE_TYPE: types of work queue used by MFAllocateWorkQueueEx
 
+    // MF work queues
+    // MFASYNC_WORKQUEUE_TYPE: types of work queue used by MFAllocateWorkQueueEx
     TMFASYNC_WORKQUEUE_TYPE = (
         // MF_STANDARD_WORKQUEUE: Work queue in a thread without Window
         // message loop.
         MF_STANDARD_WORKQUEUE = 0,
         // MF_WINDOW_WORKQUEUE: Work queue in a thread running Window
         // Message loop that calls PeekMessage() / DispatchMessage()..
-        MF_WINDOW_WORKQUEUE = 1, MF_MULTITHREADED_WORKQUEUE = 2 // common MT threadpool
-      );
+        MF_WINDOW_WORKQUEUE = 1,
+        MF_MULTITHREADED_WORKQUEUE = 2 // common MT threadpool
+        );
 
     // MFASYNCRESULT struct.
     // Any implementation of IMFAsyncResult must inherit from this struct;
     // the Media Foundation workqueue implementation depends on this.
 
-    TtagMFASYNCRESULT = record
+    TMFASYNCRESULT = record
         AsyncResult: IMFAsyncResult;
         overlapped: TOVERLAPPED;
         pCallback: IMFAsyncCallback;
@@ -1502,7 +2001,7 @@ type
         hEvent: THANDLE;
     end;
 
-    TMFASYNCRESULT = TtagMFASYNCRESULT;
+    TtagMFASYNCRESULT = TMFASYNCRESULT;
 
     // Possible values for MF_EVENT_TOPOLOGY_STATUS attribute.
 
@@ -1575,6 +2074,14 @@ type
 
     PROI_AREA = ^TROI_AREA;
 
+    TMACROBLOCK_DATA = record
+        flags: UINT32;
+        motionVectorX: INT16;
+        motionVectorY: INT16;
+        QPDelta: INT32;
+    end;
+    PMACROBLOCK_DATA = ^TMACROBLOCK_DATA;
+
     TtagFaceRectInfoBlobHeader = record
         Size: ULONG; // Size of this header + all FaceRectInfo following
         Count: ULONG; // Number of FaceRectInfo's in the blob
@@ -1639,7 +2146,6 @@ type
     TtagHistogramGrid = record
         Width: ULONG; // Width of the sensor output that histogram is collected from
         Height: ULONG; // Height of the sensor output that histogram is collected from
-
         Region: TRECT; // Absolute coordinates of the region on the sensor output that the histogram is collected for
     end;
 
@@ -1684,7 +2190,7 @@ type
         MFT_ENUM_FLAG_SORTANDFILTER_WEB_ONLY_EDGEMODE = $00000240,
         // Similar to MFT_ENUM_FLAG_SORTANDFILTER, but apply a local policy of: MF_PLUGIN_CONTROL_POLICY_USE_WEB_PLUGINS_EDGEMODE
         MFT_ENUM_FLAG_ALL = $0000003F // Enumerates all MFTs including SW and HW MFTs and applies filtering
-      );
+        );
 
     // Enum describing the packing for 3D video frames
     TMFVideo3DFormat = (MFVideo3DSampleFormat_BaseView = 0, MFVideo3DSampleFormat_MultiView = 1, MFVideo3DSampleFormat_Packed_LeftRight = 2,
@@ -1695,7 +2201,8 @@ type
 
     // Enum describing the video rotation formats
     // Only the values of 0, 90, 180, and 270 are valid.
-    TMFVideoRotationFormat = (MFVideoRotationFormat_0 = 0, MFVideoRotationFormat_90 = 90, MFVideoRotationFormat_180 = 180, MFVideoRotationFormat_270 = 270);
+    TMFVideoRotationFormat = (MFVideoRotationFormat_0 = 0, MFVideoRotationFormat_90 = 90, MFVideoRotationFormat_180 =
+        180, MFVideoRotationFormat_270 = 270);
 
 
     // MF_MT_AUDIO_FOLDDOWN_MATRIX stores folddown structure from multichannel to stereo
@@ -1753,7 +2260,6 @@ type
 
     // from strmif.h
     TAMMediaType = record
-
         majortype: TGUID;
         subtype: TGUID;
         bFixedSizeSamples: boolean;
@@ -1771,25 +2277,129 @@ type
 
     TMFWaveFormatExConvertFlags = (MFWaveFormatExConvertFlag_Normal = 0, MFWaveFormatExConvertFlag_ForceExtensible = 1);
 
+    TMFSampleEncryptionProtectionScheme = (
+        MF_SAMPLE_ENCRYPTION_PROTECTION_SCHEME_NONE = 0,
+        MF_SAMPLE_ENCRYPTION_PROTECTION_SCHEME_AES_CTR = 1,
+        MF_SAMPLE_ENCRYPTION_PROTECTION_SCHEME_AES_CBC = 2);
 
-    { DLL Functions }
+    //{$IF  (WDK_NTDDI_VERSION >= NTDDI_WIN10)}
 
-    /// /////////////////////////////////////////////////////////////////////////////
-    /// ////////////////////////////   Startup/Shutdown  ////////////////////////////
-    /// /////////////////////////////////////////////////////////////////////////////
+    // MFSample Perception Date Type-specific attribute GUIDs should be in sync with KSCameraProfileSensorType
+
+    TMFFrameSourceTypes = (
+        MFFrameSourceTypes_Color = $0001,
+        MFFrameSourceTypes_Infrared = $0002,
+        MFFrameSourceTypes_Depth = $0004,
+        MFFrameSourceTypes_Image = $0008,
+        MFFrameSourceTypes_Custom = $0080);
+
+    //{$ENDIF} // (WINVER > _WIN32_WINNT_WIN10)
 
 
-    // Initializes the platform object.
-    // Must be called before using Media Foundation.
-    // A matching MFShutdown call must be made when the application is done using
-    // Media Foundation.
-    // The "Version" parameter should be set to MF_API_VERSION.
-    // Application should not call MFStartup / MFShutdown from workqueue threads
+
+
+    TMFDepthMeasurement = (
+        DistanceToFocalPlane = 0,
+        DistanceToOpticalCenter = 1);
+
+
+    //{$IF  (NTDDI_VERSION >= NTDDI_WIN10_RS2)}
+    TMF_CUSTOM_DECODE_UNIT_TYPE = (
+        MF_DECODE_UNIT_NAL = 0,
+        MF_DECODE_UNIT_SEI = 1);
+    //{$ENDIF} // (NTDDI_VERSION >= NTDDI_WIN10_RS2)
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Camera Extrinsics
+    ////////////////////////////////////////////////////////////////////////////////
+
+    TMF_FLOAT2 = record
+        x: single;
+        y: single;
+    end;
+    PMF_FLOAT2 = ^TMF_FLOAT2;
+
+    TMF_FLOAT3 = record
+        x: single;
+        y: single;
+        z: single;
+    end;
+    PMF_FLOAT3 = ^TMF_FLOAT3;
+
+    TMF_QUATERNION = record
+        x: single;
+        y: single;
+        z: single;
+        w: single;
+    end;
+    PMF_QUATERNION = ^TMF_QUATERNION;
+
+    TMFCameraExtrinsic_CalibratedTransform = record
+        CalibrationId: TGUID;
+        Position: TMF_FLOAT3;
+        Orientation: TMF_QUATERNION;
+    end;
+    PMFCameraExtrinsic_CalibratedTransform = ^TMFCameraExtrinsic_CalibratedTransform;
+
+    TMFCameraExtrinsics = record
+        TransformCount: UINT32;
+        CalibratedTransforms: PMFCameraExtrinsic_CalibratedTransform;
+    end;
+    PMFCameraExtrinsics = ^TMFCameraExtrinsics;
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Camera Intrinsics
+    ////////////////////////////////////////////////////////////////////////////////
+
+    TMFCameraIntrinsic_PinholeCameraModel = record
+        FocalLength: TMF_FLOAT2;
+        PrincipalPoint: TMF_FLOAT2;
+    end;
+    PMFCameraIntrinsic_PinholeCameraModel = ^TMFCameraIntrinsic_PinholeCameraModel;
+
+    TMFCameraIntrinsic_DistortionModel = record
+        Radial_k1: single;
+        Radial_k2: single;
+        Radial_k3: single;
+        Tangential_p1: single;
+        Tangential_p2: single;
+    end;
+    PMFCameraIntrinsic_DistortionModel = ^TMFCameraIntrinsic_DistortionModel;
+
+    TMFPinholeCameraIntrinsic_IntrinsicModel = record
+        Width: UINT32;
+        Height: UINT32;
+        CameraModel: TMFCameraIntrinsic_PinholeCameraModel;
+        DistortionModel: TMFCameraIntrinsic_DistortionModel;
+    end;
+    PMFPinholeCameraIntrinsic_IntrinsicModel = ^TMFPinholeCameraIntrinsic_IntrinsicModel;
+
+    TMFPinholeCameraIntrinsics = record
+        IntrinsicModelCount: UINT32;
+        IntrinsicModels: PMFPinholeCameraIntrinsic_IntrinsicModel;
+    end;
+    PMFPinholeCameraIntrinsics = ^TMFPinholeCameraIntrinsics;
+
+
+
+
+{ DLL Functions }
+
+/// /////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////   Startup/Shutdown  ////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
+
+
+// Initializes the platform object.
+// Must be called before using Media Foundation.
+// A matching MFShutdown call must be made when the application is done using
+// Media Foundation.
+// The "Version" parameter should be set to MF_API_VERSION.
+// Application should not call MFStartup / MFShutdown from workqueue threads
 
 function MFStartup(Version: ULONG; dwFlags: DWORD = MFSTARTUP_FULL): HRESULT; stdcall; external MFPlat_DLL;
-{ function MFStartup(Version: ULONG; dwFlags: DWORD): HResult;
-  stdcall; external MFPlat_DLL; }
-
 
 // Shuts down the platform object.
 // Releases all resources including threads.
@@ -1819,11 +2429,13 @@ function MFPutWorkItemEx(dwQueue: DWORD; pResult: IMFAsyncResult): HRESULT; stdc
 
 function MFPutWorkItemEx2(dwQueue: DWORD; Priority: LONG; pResult: IMFAsyncResult): HRESULT; stdcall; external MFPlat_DLL;
 
-function MFPutWaitingWorkItem(hEvent: THANDLE; Priority: LONG; pResult: IMFAsyncResult; out pKey: TMFWORKITEM_KEY): HRESULT; stdcall; external MFPlat_DLL;
+function MFPutWaitingWorkItem(hEvent: THANDLE; Priority: LONG; pResult: IMFAsyncResult; out pKey: TMFWORKITEM_KEY): HRESULT;
+    stdcall; external MFPlat_DLL;
 
 function MFAllocateSerialWorkQueue(dwWorkQueue: DWORD; OUT pdwWorkQueue: DWORD): HRESULT; stdcall; external MFPlat_DLL;
 
-function MFScheduleWorkItem(pCallback: IMFAsyncCallback; pState: IUnknown; Timeout: int64; out pKey: TMFWORKITEM_KEY): HRESULT; stdcall; external MFPlat_DLL;
+function MFScheduleWorkItem(pCallback: IMFAsyncCallback; pState: IUnknown; Timeout: int64; out pKey: TMFWORKITEM_KEY): HRESULT;
+    stdcall; external MFPlat_DLL;
 
 function MFScheduleWorkItemEx(pResult: IMFAsyncResult; Timeout: int64; out pKey: TMFWORKITEM_KEY): HRESULT; stdcall; external MFPlat_DLL;
 
@@ -1840,9 +2452,7 @@ function MFCancelWorkItem(Key: TMFWORKITEM_KEY): HRESULT; stdcall; external MFPl
 // MF periodic callbacks
 
 function MFGetTimerPeriodicity(out Periodicity: DWORD): HRESULT; stdcall; external MFPlat_DLL;
-
 function MFAddPeriodicCallback(Callback: TMFPERIODICCALLBACK; pContext: IUnknown; out pdwKey: DWORD): HRESULT; stdcall; external MFPlat_DLL;
-
 function MFRemovePeriodicCallback(dwKey: DWORD): HRESULT; stdcall; external MFPlat_DLL;
 
 /// ////////////////////////////////////////////////////////////////////////////
@@ -1855,23 +2465,22 @@ function MFAllocateWorkQueueEx(WorkQueueType: TMFASYNC_WORKQUEUE_TYPE; OUT pdwWo
 
 // Allocate a standard work queue. the behaviour is the same with:
 // MFAllocateWorkQueueEx( MF_STANDARD_WORKQUEUE, pdwWorkQueue )
-
 function MFAllocateWorkQueue(OUT pdwWorkQueue: DWORD): HRESULT; stdcall; external MFPlat_DLL;
 
 function MFLockWorkQueue(dwWorkQueue: DWORD): HRESULT; stdcall; external MFPlat_DLL;
 
 function MFUnlockWorkQueue(dwWorkQueue: DWORD): HRESULT; stdcall; external MFPlat_DLL;
 
-function MFBeginRegisterWorkQueueWithMMCSS(dwWorkQueueId: DWORD; wszClass: LPCWSTR; dwTaskId: DWORD; pDoneCallback: IMFAsyncCallback;
-    pDoneState: IUnknown): HRESULT; stdcall; external MFPlat_DLL;
+function MFBeginRegisterWorkQueueWithMMCSS(dwWorkQueueId: DWORD; wszClass: LPCWSTR; dwTaskId: DWORD;
+    pDoneCallback: IMFAsyncCallback; pDoneState: IUnknown): HRESULT; stdcall; external MFPlat_DLL;
 
-function MFBeginRegisterWorkQueueWithMMCSSEx(dwWorkQueueId: DWORD; wszClass: LPCWSTR; dwTaskId: DWORD; lPriority: LONG; pDoneCallback: IMFAsyncCallback;
-    pDoneState: IUnknown): HRESULT; stdcall; external MFPlat_DLL;
+function MFBeginRegisterWorkQueueWithMMCSSEx(dwWorkQueueId: DWORD; wszClass: LPCWSTR; dwTaskId: DWORD; lPriority: LONG;
+    pDoneCallback: IMFAsyncCallback; pDoneState: IUnknown): HRESULT; stdcall; external MFPlat_DLL;
 
 function MFEndRegisterWorkQueueWithMMCSS(pResult: IMFAsyncResult; out pdwTaskId: DWORD): HRESULT; stdcall; external MFPlat_DLL;
 
 function MFBeginUnregisterWorkQueueWithMMCSS(dwWorkQueueId: DWORD; pDoneCallback: IMFAsyncCallback; pDoneState: IUnknown): HRESULT; stdcall;
-external MFPlat_DLL;
+    external MFPlat_DLL;
 
 function MFEndUnregisterWorkQueueWithMMCSS(pResult: IMFAsyncResult): HRESULT; stdcall; external MFPlat_DLL;
 
@@ -1894,12 +2503,12 @@ function MFGetWorkQueueMMCSSPriority(dwWorkQueueId: DWORD; out lPriority: LONG):
 
 // Instantiates the MF-provided Async Result implementation
 
-function MFCreateAsyncResult(punkObject: IUnknown; pCallback: IMFAsyncCallback; punkState: IUnknown; out ppAsyncResult: IMFAsyncResult): HRESULT; stdcall;
-external MFPlat_DLL;
+function MFCreateAsyncResult(punkObject: IUnknown; pCallback: IMFAsyncCallback; punkState: IUnknown;
+    out ppAsyncResult: IMFAsyncResult): HRESULT; stdcall;
+    external MFPlat_DLL;
 
 
 // Helper for calling IMFAsyncCallback::Invoke
-
 function MFInvokeCallback(pAsyncResult: IMFAsyncResult): HRESULT; stdcall; external MFPlat_DLL;
 
 /// ////////////////////////////////////////////////////////////////////////////
@@ -1910,17 +2519,16 @@ function MFInvokeCallback(pAsyncResult: IMFAsyncResult): HRESULT; stdcall; exter
 // Regardless of the access mode with which the file is opened, the sharing
 // permissions will allow shared reading and deleting.
 
-function MFCreateFile(AccessMode: TMF_FILE_ACCESSMODE; OpenMode: TMF_FILE_OPENMODE; fFlags: TMF_FILE_FLAGS; pwszFileURL: LPCWSTR;
-    out ppIByteStream: IMFByteStream): HRESULT; stdcall; external MFPlat_DLL;
+function MFCreateFile(AccessMode: TMF_FILE_ACCESSMODE; OpenMode: TMF_FILE_OPENMODE; fFlags: TMF_FILE_FLAGS;
+    pwszFileURL: LPCWSTR; out ppIByteStream: IMFByteStream): HRESULT; stdcall; external MFPlat_DLL;
 
-function MFCreateTempFile(AccessMode: TMF_FILE_ACCESSMODE; OpenMode: TMF_FILE_OPENMODE; fFlags: TMF_FILE_FLAGS; out ppIByteStream: IMFByteStream): HRESULT;
-  stdcall; external MFPlat_DLL;
+function MFCreateTempFile(AccessMode: TMF_FILE_ACCESSMODE; OpenMode: TMF_FILE_OPENMODE; fFlags: TMF_FILE_FLAGS;
+    out ppIByteStream: IMFByteStream): HRESULT;
+    stdcall; external MFPlat_DLL;
 
-function MFBeginCreateFile(AccessMode: TMF_FILE_ACCESSMODE; OpenMode: TMF_FILE_OPENMODE; fFlags: TMF_FILE_FLAGS; pwszFilePath: LPCWSTR;
-    pCallback: IMFAsyncCallback; pState: IUnknown; out ppCancelCookie: IUnknown): HRESULT; stdcall; external MFPlat_DLL;
-
+function MFBeginCreateFile(AccessMode: TMF_FILE_ACCESSMODE; OpenMode: TMF_FILE_OPENMODE; fFlags: TMF_FILE_FLAGS;
+    pwszFilePath: LPCWSTR; pCallback: IMFAsyncCallback; pState: IUnknown; out ppCancelCookie: IUnknown): HRESULT; stdcall; external MFPlat_DLL;
 function MFEndCreateFile(pResult: IMFAsyncResult; out ppFile: IMFByteStream): HRESULT; stdcall; external MFPlat_DLL;
-
 function MFCancelCreateFile(pCancelCookie: IUnknown): HRESULT; stdcall; external MFPlat_DLL;
 
 /// ////////////////////////////////////////////////////////////////////////////
@@ -1937,7 +2545,7 @@ function MFCreateMemoryBuffer(cbMaxLength: DWORD; out ppBuffer: IMFMediaBuffer):
 // within an existing IMFMediaBuffer
 
 function MFCreateMediaBufferWrapper(pBuffer: IMFMediaBuffer; cbOffset: DWORD; dwLength: DWORD; out ppBuffer: IMFMediaBuffer): HRESULT; stdcall;
-external MFPlat_DLL;
+    external MFPlat_DLL;
 
 
 // Creates a legacy buffer (IMediaBuffer) wrapper at the given offset within
@@ -1962,16 +2570,14 @@ function MFLockDXGIDeviceManager(out pResetToken: UINT; out ppManager: IMFDXGIDe
 
 function MFUnlockDXGIDeviceManager(): HRESULT; stdcall; external MFPlat_DLL;
 
-function MFCreateDXSurfaceBuffer(const riid: TGUID; punkSurface: IUnknown; fBottomUpWhenLinear: boolean; out ppBuffer: IMFMediaBuffer): HRESULT; stdcall;
-external EVR_DLL;
+function MFCreateDXSurfaceBuffer(const riid: TGUID; punkSurface: IUnknown; fBottomUpWhenLinear: boolean;
+    out ppBuffer: IMFMediaBuffer): HRESULT; stdcall;
+    external EVR_DLL;
 
 function MFCreateWICBitmapBuffer(const riid: TGUID; punkSurface: IUnknown; out ppBuffer: IMFMediaBuffer): HRESULT; stdcall; external MFPlat_DLL;
-
-function MFCreateDXGISurfaceBuffer(const riid: TGUID; punkSurface: IUnknown; uSubresourceIndex: UINT; fBottomUpWhenLinear: boolean;
-    out ppBuffer: IMFMediaBuffer): HRESULT; stdcall; external MFPlat_DLL;
-
+function MFCreateDXGISurfaceBuffer(const riid: TGUID; punkSurface: IUnknown; uSubresourceIndex: UINT;
+    fBottomUpWhenLinear: boolean; out ppBuffer: IMFMediaBuffer): HRESULT; stdcall; external MFPlat_DLL;
 function MFCreateVideoSampleAllocatorEx(const riid: TGUID; out ppSampleAllocator): HRESULT; stdcall; external MFPlat_DLL;
-
 function MFCreateDXGIDeviceManager(out resetToken: UINT; out ppDeviceManager: IMFDXGIDeviceManager): HRESULT; stdcall; external MFPlat_DLL;
 
 function MFCreateAlignedMemoryBuffer(cbMaxLength: DWORD; cbAligment: DWORD; out ppBuffer: IMFMediaBuffer): HRESULT; stdcall; external MFPlat_DLL;
@@ -1979,7 +2585,7 @@ function MFCreateAlignedMemoryBuffer(cbMaxLength: DWORD; cbAligment: DWORD; out 
 
 // Instantiates the MF-provided Media Event implementation.
 
-function MFCreateMediaEvent(met: TMediaEventType; const guidExtendedType: TGUID; hrStatus: HRESULT; const pvValue: PROPVARIANT;
+function MFCreateMediaEvent(met: TMediaEventType; const guidExtendedType: TGUID; hrStatus: HRESULT; const pvValue: PPROPVARIANT;
     out ppEvent: IMFMediaEvent): HRESULT; stdcall; external MFPlat_DLL;
 
 
@@ -1997,41 +2603,38 @@ function MFCreateEventQueue(out ppMediaEventQueue: IMFMediaEventQueue): HRESULT;
 function MFCreateSample(out ppIMFSample: IMFSample): HRESULT; stdcall; external MFPlat_DLL;
 
 /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////  Attributes ////////////////////////////////////
-
 function MFCreateAttributes(out ppMFAttributes: IMFAttributes; cInitialSize: UINT32): HRESULT; stdcall; external MFPlat_DLL;
-
 function MFInitAttributesFromBlob(pAttributes: IMFAttributes; const pBuf: PUINT8; cbBufSize: UINT): HRESULT; stdcall; external MFPlat_DLL;
-
 function MFGetAttributesAsBlobSize(pAttributes: IMFAttributes; out pcbBufSize: UINT32): HRESULT; stdcall; external MFPlat_DLL;
-
 function MFGetAttributesAsBlob(pAttributes: IMFAttributes; out pBuf: PUINT8; cbBufSize: UINT): HRESULT; stdcall; external MFPlat_DLL;
 
 /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////  MFT Register & Enum ////////////////////////////
 // "Flags" is for future expansion - for now must be 0
-function MFTRegister(clsidMFT: CLSID; guidCategory: TGUID; pszName: LPWSTR; Flags: UINT32; cInputTypes: UINT32; pInputTypes: PMFT_REGISTER_TYPE_INFO;
-    cOutputTypes: UINT32; pOutputTypes: PMFT_REGISTER_TYPE_INFO; pAttributes: IMFAttributes): HRESULT; stdcall; external MFPlat_DLL;
-
+function MFTRegister(clsidMFT: CLSID; guidCategory: TGUID; pszName: LPWSTR; Flags: UINT32; cInputTypes: UINT32;
+    pInputTypes: PMFT_REGISTER_TYPE_INFO; cOutputTypes: UINT32; pOutputTypes: PMFT_REGISTER_TYPE_INFO; pAttributes: IMFAttributes): HRESULT;
+    stdcall; external MFPlat_DLL;
 function MFTUnregister(clsidMFT: CLSID): HRESULT; stdcall; external MFPlat_DLL;
 
 // Register an MFT class in-process
-function MFTRegisterLocal(pClassFactory: IClassFactory; const guidCategory: TGUID; pszName: LPCWSTR; Flags: UINT32; cInputTypes: UINT32;
-    const pInputTypes: PMFT_REGISTER_TYPE_INFO; cOutputTypes: UINT32; const pOutputTypes: PMFT_REGISTER_TYPE_INFO): HRESULT; stdcall; external MFPlat_DLL;
+function MFTRegisterLocal(pClassFactory: IClassFactory; const guidCategory: TGUID; pszName: LPCWSTR; Flags: UINT32;
+    cInputTypes: UINT32; const pInputTypes: PMFT_REGISTER_TYPE_INFO; cOutputTypes: UINT32; const pOutputTypes: PMFT_REGISTER_TYPE_INFO): HRESULT;
+    stdcall; external MFPlat_DLL;
 
 // Unregister locally registered MFT
 // If pClassFactory is NULL all local MFTs are unregistered
 function MFTUnregisterLocal(pClassFactory: IClassFactory): HRESULT; stdcall; external MFPlat_DLL;
 
 // Register an MFT class in-process, by CLSID
-function MFTRegisterLocalByCLSID(const clisdMFT: CLSID; const guidCategory: TGUID; pszName: LPCWSTR; Flags: UINT32; cInputTypes: UINT32;
-    const pInputTypes: PMFT_REGISTER_TYPE_INFO; cOutputTypes: UINT32; const pOutputTypes: PMFT_REGISTER_TYPE_INFO): HRESULT; stdcall; external MFPlat_DLL;
+function MFTRegisterLocalByCLSID(const clisdMFT: CLSID; const guidCategory: TGUID; pszName: LPCWSTR; Flags: UINT32;
+    cInputTypes: UINT32; const pInputTypes: PMFT_REGISTER_TYPE_INFO; cOutputTypes: UINT32; const pOutputTypes: PMFT_REGISTER_TYPE_INFO): HRESULT;
+    stdcall; external MFPlat_DLL;
 
 // Unregister locally registered MFT by CLSID
 function MFTUnregisterLocalByCLSID(clsidMFT: CLSID): HRESULT; stdcall; external MFPlat_DLL;
 
 
 // result *ppclsidMFT must be freed with CoTaskMemFree.
-
-function MFTEnum(guidCategory: TGUID; Flags: UINT32; const pInputType: TMFT_REGISTER_TYPE_INFO; const pOutputType: TMFT_REGISTER_TYPE_INFO;
+function MFTEnum(guidCategory: TGUID; Flags: UINT32; pInputType: PMFT_REGISTER_TYPE_INFO; pOutputType: PMFT_REGISTER_TYPE_INFO;
     pAttributes: IMFAttributes; out ppclsidMFT: PCLSID; // must be freed with CoTaskMemFree
     out pcMFTs: UINT32): HRESULT; stdcall; external MFPlat_DLL;
 
@@ -2039,96 +2642,96 @@ function MFTEnum(guidCategory: TGUID; Flags: UINT32; const pInputType: TMFT_REGI
 // result *pppMFTActivate must be freed with CoTaskMemFree. Each IMFActivate pointer inside this
 // buffer should be released.
 
-function MFTEnumEx(guidCategory: TGUID; Flags: UINT32; const pInputType: PMFT_REGISTER_TYPE_INFO; const pOutputType: PMFT_REGISTER_TYPE_INFO;
-    out pppMFTActivate: PIMFActivate; out pnumMFTActivate: UINT32): HRESULT; stdcall; external MFPlat_DLL;
+function MFTEnumEx(guidCategory: TGUID; Flags: UINT32; const pInputType: PMFT_REGISTER_TYPE_INFO;
+    const pOutputType: PMFT_REGISTER_TYPE_INFO; out pppMFTActivate: PIMFActivate; out pnumMFTActivate: UINT32): HRESULT;
+    stdcall; external MFPlat_DLL;
 
 
 // results *pszName, *ppInputTypes, and *ppOutputTypes must be freed with CoTaskMemFree.
 // *ppAttributes must be released.
 
-function MFTGetInfo(clsidMFT: CLSID; out pszName: LPWSTR; out ppInputTypes: PMFT_REGISTER_TYPE_INFO; out pcInputTypes: UINT32;
-    out ppOutputTypes: PMFT_REGISTER_TYPE_INFO; out pcOutputTypes: UINT32; out ppAttributes: IMFAttributes): HRESULT; stdcall; external MFPlat_DLL;
+function MFTGetInfo(clsidMFT: CLSID; out pszName: LPWSTR; out ppInputTypes {arraysize pcInputTypes}: PMFT_REGISTER_TYPE_INFO;
+    out pcInputTypes: UINT32; out ppOutputTypes {arraysize pcOutputTypes}: PMFT_REGISTER_TYPE_INFO; out pcOutputTypes: UINT32;
+    out ppAttributes: IMFAttributes): HRESULT; stdcall; external MFPlat_DLL;
 
 
 // Get the plugin control API
-
 function MFGetPluginControl(out ppPluginControl: IMFPluginControl): HRESULT; stdcall; external MFPlat_DLL;
 
-
 // Get MFT's merit - checking that is has a valid certificate
-
 function MFGetMFTMerit(var pMFT: IUnknown; cbVerifier: UINT32; const verifier: PBYTE; out merit: DWORD): HRESULT; stdcall; external MFPlat_DLL;
 
 function MFRegisterLocalSchemeHandler(szScheme: PWideChar; pActivate: IMFActivate): HRESULT; stdcall; external MFPlat_DLL;
-
-function MFRegisterLocalByteStreamHandler(szFileExtension: PWideChar; szMimeType: PWideChar; pActivate: IMFActivate): HRESULT; stdcall; external MFPlat_DLL;
+function MFRegisterLocalByteStreamHandler(szFileExtension: PWideChar; szMimeType: PWideChar; pActivate: IMFActivate): HRESULT;
+    stdcall; external MFPlat_DLL;
 
 
 // Wrap a bytestream so that calling Close() on the wrapper
 // closes the wrapper but not the original bytestream. The
 // original bytestream can then be passed to another
 // media source for instance.
-
 function MFCreateMFByteStreamWrapper(pStream: IMFByteStream; out ppStreamWrapper: IMFByteStream): HRESULT; stdcall; external MFPlat_DLL;
-
 
 // Create a MF activate object that can instantiate media extension objects.
 // The activate object supports both IMFActivate and IClassFactory.
-
-function MFCreateMediaExtensionActivate(szActivatableClassId: PWideChar; pConfiguration: IUnknown; const riid: TGUID; out ppvObject: Pointer): HRESULT;
-  stdcall; external MFPlat_DLL;
+function MFCreateMediaExtensionActivate(szActivatableClassId: PWideChar; pConfiguration: IUnknown; const riid: TGUID;
+    out ppvObject: Pointer): HRESULT;
+    stdcall; external MFPlat_DLL;
 
 /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////  Media Type functions //////////////////////////
 /// /////////////////////////////////////////////////////////////////////////////
 
 function MFValidateMediaTypeSize(formattype: TGUID; pBlock: PUINT8; cbSize: UINT32): HRESULT; stdcall; external MFPlat_DLL;
-
 function MFCreateMediaType(out ppMFType: IMFMediaType): HRESULT; stdcall; external MFPlat_DLL;
-
-function MFCreateMFVideoFormatFromMFMediaType(pMFType: IMFMediaType; out ppMFVF: TMFVIDEOFORMAT;
+function MFCreateMFVideoFormatFromMFMediaType(pMFType: IMFMediaType; out ppMFVF: PMFVIDEOFORMAT;
     // must be deleted with CoTaskMemFree
     out pcbSize: UINT32): HRESULT; stdcall; external MFPlat_DLL;
 
 
 // declarations with default parameters
 
-function MFCreateWaveFormatExFromMFMediaType(pMFType: IMFMediaType; out ppWF: TWAVEFORMATEX; out pcbSize: UINT32;
+function MFCreateWaveFormatExFromMFMediaType(pMFType: IMFMediaType; out ppWF: PWAVEFORMATEX; out pcbSize: UINT32;
     Flags: UINT32 = Ord(MFWaveFormatExConvertFlag_Normal)): HRESULT; stdcall; external MFPlat_DLL;
 
-function MFInitMediaTypeFromVideoInfoHeader(pMFType: IMFMediaType; const pVIH: PVIDEOINFOHEADER; cbBufSize: UINT32; const pSubtype: TGUID): HRESULT; stdcall;
-external MFPlat_DLL;
+function MFInitMediaTypeFromVideoInfoHeader(pMFType: IMFMediaType; const pVIH: PVIDEOINFOHEADER; cbBufSize: UINT32;
+    const pSubtype: PGUID = nil): HRESULT; stdcall;
+    external MFPlat_DLL;
 
-function MFInitMediaTypeFromVideoInfoHeader2(pMFType: IMFMediaType; const pVIH2: PVIDEOINFOHEADER2; cbBufSize: UINT32; const pSubtype: TGUID): HRESULT;
-  stdcall; external MFPlat_DLL;
+function MFInitMediaTypeFromVideoInfoHeader2(pMFType: IMFMediaType; const pVIH2: PVIDEOINFOHEADER2; cbBufSize: UINT32;
+    const pSubtype: PGUID = nil): HRESULT;
+    stdcall; external MFPlat_DLL;
 
-function MFInitMediaTypeFromMPEG1VideoInfo(pMFType: IMFMediaType; const pMP1VI: PMPEG1VIDEOINFO; cbBufSize: UINT32; const pSubtype: PGUID = nil): HRESULT;
-  stdcall; external MFPlat_DLL;
+function MFInitMediaTypeFromMPEG1VideoInfo(pMFType: IMFMediaType; const pMP1VI: PMPEG1VIDEOINFO; cbBufSize: UINT32;
+    const pSubtype: PGUID = nil): HRESULT;
+    stdcall; external MFPlat_DLL;
 
-function MFInitMediaTypeFromMPEG2VideoInfo(pMFType: IMFMediaType; const pMP2VI: PMPEG2VIDEOINFO; cbBufSize: UINT32; const pSubtype: PGUID = nil): HRESULT;
-  stdcall; external MFPlat_DLL;
+function MFInitMediaTypeFromMPEG2VideoInfo(pMFType: IMFMediaType; const pMP2VI: PMPEG2VIDEOINFO; cbBufSize: UINT32;
+    const pSubtype: PGUID = nil): HRESULT;
+    stdcall; external MFPlat_DLL;
 
-function MFCalculateBitmapImageSize(const pBMIH: PBITMAPINFOHEADER; cbBufSize: UINT32; out pcbImageSize: UINT32; out pbKnown: boolean): HRESULT; stdcall;
-external MFPlat_DLL;
+function MFCalculateBitmapImageSize(const pBMIH: PBITMAPINFOHEADER; cbBufSize: UINT32; out pcbImageSize: UINT32;
+    out pbKnown: boolean): HRESULT; stdcall;
+    external MFPlat_DLL;
 
-function MFCalculateImageSize(guidSubtype: TREFGUID; unWidth: UINT32; unHeight: UINT32; out pcbImageSize: UINT32): HRESULT; stdcall; external MFPlat_DLL;
-
+function MFCalculateImageSize(const guidSubtype: TGUID; unWidth: UINT32; unHeight: UINT32; out pcbImageSize: UINT32): HRESULT;
+    stdcall; external MFPlat_DLL;
 function MFFrameRateToAverageTimePerFrame(unNumerator: UINT32; unDenominator: UINT32; out punAverageTimePerFrame: UINT64): HRESULT; stdcall;
-external MFPlat_DLL;
-
+    external MFPlat_DLL;
 function MFAverageTimePerFrameToFrameRate(unAverageTimePerFrame: UINT64; out punNumerator: UINT32; out punDenominator: UINT32): HRESULT; stdcall;
-external MFPlat_DLL;
+    external MFPlat_DLL;
+function MFInitMediaTypeFromMFVideoFormat(pMFType: IMFMediaType; const pMFVF: PMFVIDEOFORMAT; cbBufSize: UINT32): HRESULT;
+    stdcall; external MFPlat_DLL;
+function MFInitMediaTypeFromWaveFormatEx(pMFType: IMFMediaType; const pWaveFormat: PWAVEFORMATEX; cbBufSize: UINT32): HRESULT;
+    stdcall; external MFPlat_DLL;
 
-function MFInitMediaTypeFromMFVideoFormat(pMFType: IMFMediaType; const pMFVF: PMFVIDEOFORMAT; cbBufSize: UINT32): HRESULT; stdcall; external MFPlat_DLL;
-
-function MFInitMediaTypeFromWaveFormatEx(pMFType: IMFMediaType; const pWaveFormat: PWAVEFORMATEX; cbBufSize: UINT32): HRESULT; stdcall; external MFPlat_DLL;
-
-function MFInitMediaTypeFromAMMediaType(pMFType: IMFMediaType; const pAMType: TAM_MEDIA_TYPE): HRESULT; stdcall; external MFPlat_DLL;
+function MFInitMediaTypeFromAMMediaType(pMFType: IMFMediaType; const pAMType: PAM_MEDIA_TYPE): HRESULT; stdcall; external MFPlat_DLL;
 
 function MFInitAMMediaTypeFromMFMediaType(pMFType: IMFMediaType; guidFormatBlockType: TGUID; var pAMType: TAM_MEDIA_TYPE): HRESULT; stdcall;
-external MFPlat_DLL;
+    external MFPlat_DLL;
 
-function MFCreateAMMediaTypeFromMFMediaType(pMFType: IMFMediaType; guidFormatBlockType: TGUID; var ppAMType: PAM_MEDIA_TYPE // delete with DeleteMediaType
-  ): HRESULT; stdcall; external MFPlat_DLL;
+function MFCreateAMMediaTypeFromMFMediaType(pMFType: IMFMediaType; guidFormatBlockType: TGUID;
+    var ppAMType: PAM_MEDIA_TYPE // delete with DeleteMediaType
+    ): HRESULT; stdcall; external MFPlat_DLL;
 
 
 // This function compares a full media type to a partial media type.
@@ -2147,49 +2750,46 @@ function MFCreateAMMediaTypeFromMFMediaType(pMFType: IMFMediaType; guidFormatBlo
 
 function MFCompareFullToPartialMediaType(pMFTypeFull: IMFMediaType; pMFTypePartial: IMFMediaType): boolean; stdcall; external MFPlat_DLL;
 
-function MFWrapMediaType(pOrig: IMFMediaType; const majortype: TGUID; const subtype: TGUID; out ppWrap: IMFMediaType): HRESULT; stdcall; external MFPlat_DLL;
-
+function MFWrapMediaType(pOrig: IMFMediaType; const majortype: TGUID; const subtype: TGUID; out ppWrap: IMFMediaType): HRESULT;
+    stdcall; external MFPlat_DLL;
 function MFUnwrapMediaType(pWrap: IMFMediaType; out ppOrig: IMFMediaType): HRESULT; stdcall; external MFPlat_DLL;
 
 
 // MFCreateVideoMediaType
 
-function MFCreateVideoMediaTypeFromVideoInfoHeader(const PVIDEOINFOHEADER: TKS_VIDEOINFOHEADER; cbVideoInfoHeader: DWORD; dwPixelAspectRatioX: DWORD;
-    dwPixelAspectRatioY: DWORD; InterlaceMode: TMFVideoInterlaceMode; VideoFlags: QWORD; const pSubtype: TGUID;
-    out ppIVideoMediaType: IMFVideoMediaType): HRESULT; stdcall; external MFPlat_DLL;
-
-function MFCreateVideoMediaTypeFromVideoInfoHeader2(const PVIDEOINFOHEADER: TKS_VIDEOINFOHEADER2; cbVideoInfoHeader: DWORD; AdditionalVideoFlags: QWORD;
+function MFCreateVideoMediaTypeFromVideoInfoHeader(const PVIDEOINFOHEADER: TKS_VIDEOINFOHEADER; cbVideoInfoHeader: DWORD;
+    dwPixelAspectRatioX: DWORD; dwPixelAspectRatioY: DWORD; InterlaceMode: TMFVideoInterlaceMode; VideoFlags: QWORD;
     const pSubtype: TGUID; out ppIVideoMediaType: IMFVideoMediaType): HRESULT; stdcall; external MFPlat_DLL;
 
+function MFCreateVideoMediaTypeFromVideoInfoHeader2(const PVIDEOINFOHEADER: TKS_VIDEOINFOHEADER2; cbVideoInfoHeader: DWORD;
+    AdditionalVideoFlags: QWORD; const pSubtype: TGUID; out ppIVideoMediaType: IMFVideoMediaType): HRESULT; stdcall; external MFPlat_DLL;
+
 function MFCreateVideoMediaType(const pVideoFormat: TMFVIDEOFORMAT; out ppIVideoMediaType: IMFVideoMediaType): HRESULT; stdcall; external MFPlat_DLL;
-
 function MFCreateVideoMediaTypeFromSubtype(const pAMSubtype: TGUID; out ppIVideoMediaType: IMFVideoMediaType): HRESULT; stdcall; external MFPlat_DLL;
-
 function MFIsFormatYUV(Format: DWORD): boolean; stdcall; external EVR_DLL;
 
 
 // These depend on BITMAPINFOHEADER being defined
 
-function MFCreateVideoMediaTypeFromBitMapInfoHeader(const pbmihBitMapInfoHeader: TBITMAPINFOHEADER; dwPixelAspectRatioX: DWORD; dwPixelAspectRatioY: DWORD;
-    InterlaceMode: TMFVideoInterlaceMode; VideoFlags: QWORD; qwFramesPerSecondNumerator: QWORD; qwFramesPerSecondDenominator: QWORD; dwMaxBitRate: DWORD;
-    out ppIVideoMediaType: IMFVideoMediaType): HRESULT; stdcall; external MFPlat_DLL;
-
+function MFCreateVideoMediaTypeFromBitMapInfoHeader(const pbmihBitMapInfoHeader: TBITMAPINFOHEADER; dwPixelAspectRatioX: DWORD;
+    dwPixelAspectRatioY: DWORD; InterlaceMode: TMFVideoInterlaceMode; VideoFlags: QWORD; qwFramesPerSecondNumerator: QWORD;
+    qwFramesPerSecondDenominator: QWORD; dwMaxBitRate: DWORD; out ppIVideoMediaType: IMFVideoMediaType): HRESULT; stdcall; external MFPlat_DLL;
 function MFGetStrideForBitmapInfoHeader(Format: DWORD; dwWidth: DWORD; out pStride: LONG): HRESULT; stdcall; external MFPlat_DLL;
-
 function MFGetPlaneSize(Format: DWORD; dwWidth: DWORD; dwHeight: DWORD; out pdwPlaneSize: DWORD): HRESULT; stdcall; external MFPlat_DLL;
 
 
 // MFCreateVideoMediaTypeFromBitMapInfoHeaderEx
 
-function MFCreateVideoMediaTypeFromBitMapInfoHeaderEx(const pbmihBitMapInfoHeader: PBITMAPINFOHEADER; cbBitMapInfoHeader: UINT32; dwPixelAspectRatioX: DWORD;
-    dwPixelAspectRatioY: DWORD; InterlaceMode: TMFVideoInterlaceMode; VideoFlags: QWORD; dwFramesPerSecondNumerator: DWORD;
-    dwFramesPerSecondDenominator: DWORD; dwMaxBitRate: DWORD; out ppIVideoMediaType: IMFVideoMediaType): HRESULT; stdcall; external MFPlat_DLL;
+function MFCreateVideoMediaTypeFromBitMapInfoHeaderEx(const pbmihBitMapInfoHeader: PBITMAPINFOHEADER;
+    cbBitMapInfoHeader: UINT32; dwPixelAspectRatioX: DWORD; dwPixelAspectRatioY: DWORD; InterlaceMode: TMFVideoInterlaceMode;
+    VideoFlags: QWORD; dwFramesPerSecondNumerator: DWORD; dwFramesPerSecondDenominator: DWORD; dwMaxBitRate: DWORD;
+    out ppIVideoMediaType: IMFVideoMediaType): HRESULT; stdcall; external MFPlat_DLL;
 
 
 // MFCreateMediaTypeFromRepresentation
 
 function MFCreateMediaTypeFromRepresentation(guidRepresentation: TGUID; pvRepresentation: Pointer; out ppIMediaType: IMFMediaType): HRESULT; stdcall;
-external MFPlat_DLL;
+    external MFPlat_DLL;
 
 
 // MFCreateAudioMediaType
@@ -2200,25 +2800,24 @@ function MFGetUncompressedVideoFormat(const pVideoFormat: TMFVIDEOFORMAT): DWORD
 
 function MFInitVideoFormat(pVideoFormat: PMFVIDEOFORMAT; _stype: TMFStandardVideoFormat): HRESULT; stdcall; external MFPlat_DLL;
 
-function MFInitVideoFormat_RGB(pVideoFormat: PMFVIDEOFORMAT; dwWidth: DWORD; dwHeight: DWORD; D3Dfmt: DWORD (* 0 indicates sRGB *)
-): HRESULT; stdcall; external MFPlat_DLL;
+function MFInitVideoFormat_RGB(pVideoFormat: PMFVIDEOFORMAT; dwWidth: DWORD; dwHeight: DWORD; D3Dfmt: DWORD (* 0 indicates sRGB *)): HRESULT;
+    stdcall; external MFPlat_DLL;
 
 function MFConvertColorInfoToDXVA(out pdwToDXVA: DWORD; const pFromFormat: TMFVIDEOFORMAT): HRESULT; stdcall; external MFPlat_DLL;
-
 function MFConvertColorInfoFromDXVA(var pToFormat: TMFVIDEOFORMAT; dwFromDXVA: DWORD): HRESULT; stdcall; external MFPlat_DLL;
 
 
 // Optimized stride copy function
 
-function MFCopyImage(out pDest: PBYTE; lDestStride: LONG; const pSrc: PBYTE; lSrcStride: LONG; out dwWidthInBytes: DWORD; dwLines: DWORD): HRESULT; stdcall;
-external MFPlat_DLL;
+function MFCopyImage(out pDest: PBYTE; lDestStride: LONG; const pSrc: PBYTE; lSrcStride: LONG; out dwWidthInBytes: DWORD;
+    dwLines: DWORD): HRESULT; stdcall;
+    external MFPlat_DLL;
 
 function MFConvertFromFP16Array(out pDest: PSingle; const pSrc: PWORD; dwCount: DWORD): HRESULT; stdcall; external MFPlat_DLL;
-
 function MFConvertToFP16Array(out pDest: PWORD; const pSrc: PSingle; dwCount: DWORD): HRESULT; stdcall; external MFPlat_DLL;
 
 function MFCreate2DMediaBuffer(dwWidth: DWORD; dwHeight: DWORD; dwFourCC: DWORD; fBottomUp: boolean; out ppBuffer: IMFMediaBuffer): HRESULT; stdcall;
-external MFPlat_DLL;
+    external MFPlat_DLL;
 
 
 // Creates an optimal system memory media buffer from a media type
@@ -2248,6 +2847,48 @@ function MFllMulDiv(a: LONGLONG; B: LONGLONG; c: LONGLONG; d: LONGLONG): LONGLON
 
 function MFGetContentProtectionSystemCLSID(const guidProtectionSystemID: TGUID; out PCLSID: CLSID): HRESULT; stdcall; external MFPlat_DLL;
 
+
+
+
+//{$IF  (NTDDI_VERSION >= NTDDI_WIN10_RS1)
+function MFTEnum2(guidCategory: TGUID; Flags: UINT32; const pInputType: PMFT_REGISTER_TYPE_INFO;
+    const pOutputType: PMFT_REGISTER_TYPE_INFO; pAttributes: IMFAttributes; out pppMFTActivate {arraysize pnumMFTActivate}: PIMFActivate;
+    out pnumMFTActivate: UINT32): HResult; stdcall; external MFPlat_DLL;
+
+//{$ENDIF} // (NTDDI_VERSION >= NTDDI_WIN10_RS1)
+
+
+
+//{$IF  (NTDDI_VERSION >= NTDDI_WIN10_RS2)}
+function MFCreateMuxStreamAttributes(pAttributesToMux: IMFCollection; out ppMuxAttribs: IMFAttributes): HResult; stdcall; external MFPlat_DLL;
+function MFCreateMuxStreamMediaType(pMediaTypesToMux: IMFCollection; out ppMuxMediaType: IMFMediaType): HResult; stdcall; external MFPlat_DLL;
+function MFCreateMuxStreamSample(pSamplesToMux: IMFCollection; out ppMuxSample: IMFSample): HResult; stdcall; external MFPlat_DLL;
+//{$ENDIF}
+
+
+
+// IMFAttributes inline UTILITY FUNCTIONS - used for IMFMediaType as well
+
+
+function HI32(unPacked: UINT64): UINT32;
+function LO32(unPacked: UINT64): UINT32;
+function Pack2UINT32AsUINT64(unHigh: UINT32; unLow: UINT32): UINT64;
+procedure Unpack2UINT32AsUINT64(unPacked: UINT64; out punHigh: UINT32; out punLow: UINT32);
+function PackSize(unWidth: UINT32; unHeight: UINT32): UINT64;
+procedure UnpackSize(unPacked: UINT64; out punWidth: UINT32; out punHeight: UINT32);
+function PackRatio(nNumerator: INT32; unDenominator: UINT32): UINT64;
+procedure UnpackRatio(unPacked: UINT64; out pnNumerator: INT32; out punDenominator: UINT32);
+function MFGetAttributeUINT32(pAttributes: IMFAttributes; const guidKey: TGUID; unDefault: UINT32): UINT32;
+function MFGetAttributeUINT64(pAttributes: IMFAttributes; const guidKey: TGUID; unDefault: UINT64): UINT64;
+function MFGetAttributeDouble(pAttributes: IMFAttributes; const guidKey: TGUID; fDefault: double): double;
+function MFGetAttribute2UINT32asUINT64(pAttributes: IMFAttributes; const guidKey: TGUID; out punHigh32: UINT32; out punLow32: UINT32): HRESULT;
+function MFSetAttribute2UINT32asUINT64(pAttributes: IMFAttributes; const guidKey: TGUID; unHigh32: UINT32; unLow32: UINT32): HRESULT;
+function MFGetAttributeRatio(pAttributes: IMFAttributes; const guidKey: TGUID; out punNumerator: UINT32; out punDenominator: UINT32): HRESULT;
+function MFGetAttributeSize(pAttributes: IMFAttributes; const guidKey: TGUID; out punWidth: UINT32; out punHeight: UINT32): HRESULT;
+function MFSetAttributeRatio(pAttributes: IMFAttributes; const guidKey: TGUID; unNumerator: UINT32; unDenominator: UINT32): HRESULT;
+function MFSetAttributeSize(pAttributes: IMFAttributes; const guidKey: TGUID; unWidth: UINT32; unHeight: UINT32): HRESULT;
+
+
 implementation
 
 // IMFAttributes inline UTILITY FUNCTIONS - used for IMFMediaType as well
@@ -2257,15 +2898,21 @@ begin
     Result := UINT32(unPacked shr 32);
 end;
 
+
+
 function LO32(unPacked: UINT64): UINT32; inline;
 begin
     Result := UINT32(unPacked);
 end;
 
+
+
 function Pack2UINT32AsUINT64(unHigh: UINT32; unLow: UINT32): UINT64; inline;
 begin
     Result := UINT64(unHigh shl 32) or unLow;
 end;
+
+
 
 procedure Unpack2UINT32AsUINT64(unPacked: UINT64; out punHigh: UINT32; out punLow: UINT32); inline;
 begin
@@ -2273,20 +2920,28 @@ begin
     punLow := LO32(unPacked);
 end;
 
+
+
 function PackSize(unWidth: UINT32; unHeight: UINT32): UINT64; inline;
 begin
     Result := Pack2UINT32AsUINT64(unWidth, unHeight);
 end;
+
+
 
 procedure UnpackSize(unPacked: UINT64; out punWidth: UINT32; out punHeight: UINT32); inline;
 begin
     Unpack2UINT32AsUINT64(unPacked, punWidth, punHeight);
 end;
 
+
+
 function PackRatio(nNumerator: INT32; unDenominator: UINT32): UINT64; inline;
 begin
     Result := Pack2UINT32AsUINT64(UINT32(nNumerator), unDenominator);
 end;
+
+
 
 procedure UnpackRatio(unPacked: UINT64; out pnNumerator: INT32; out punDenominator: UINT32); inline;
 begin
@@ -2297,51 +2952,44 @@ end;
 // "failsafe" inline get methods - return the stored value or return a default
 
 function MFGetAttributeUINT32(pAttributes: IMFAttributes; const guidKey: TGUID; unDefault: UINT32): UINT32; inline;
-var
-    unRet: UINT32;
 begin
-
-    if (FAILED(pAttributes.GetUINT32(guidKey, unRet))) then
+    if (FAILED(pAttributes.GetUINT32(guidKey, Result))) then
     begin
-        unRet := unDefault;
+        Result := unDefault;
     end;
-    Result := unRet;
 end;
+
+
 
 function MFGetAttributeUINT64(pAttributes: IMFAttributes; const guidKey: TGUID; unDefault: UINT64): UINT64; inline;
-var
-    unRet: UINT64;
 begin
 
-    if (FAILED(pAttributes.GetUINT64(guidKey, unRet))) then
+    if (FAILED(pAttributes.GetUINT64(guidKey, Result))) then
     begin
-        unRet := unDefault;
+        Result := unDefault;
     end;
-    Result := unRet;
 end;
 
+
+
+
 function MFGetAttributeDouble(pAttributes: IMFAttributes; const guidKey: TGUID; fDefault: double): double; inline;
-var
-    fRet: double;
 begin
 
-    if (FAILED(pAttributes.GetDouble(guidKey, fRet))) then
+    if (FAILED(pAttributes.GetDouble(guidKey, Result))) then
     begin
-        fRet := fDefault;
+        Result := fDefault;
     end;
-    Result := fRet;
 end;
 
 
 // helpers for getting/setting ratios and sizes
 
-function MFGetAttribute2UINT32asUINT64(pAttributes: IMFAttributes; const guidKey: TGUID; out punHigh32: UINT32; out punLow32: UINT32): HRESULT; inline;
+function MFGetAttribute2UINT32asUINT64(pAttributes: IMFAttributes; const guidKey: TGUID; out punHigh32: UINT32;
+    out punLow32: UINT32): HRESULT; inline;
 var
     unPacked: UINT64;
 begin
-
-    Result := S_OK;
-
     Result := pAttributes.GetUINT64(guidKey, unPacked);
     if (FAILED(Result)) then
         Exit;
@@ -2349,33 +2997,46 @@ begin
     Unpack2UINT32AsUINT64(unPacked, punHigh32, punLow32);
 end;
 
+
+
 function MFSetAttribute2UINT32asUINT64(pAttributes: IMFAttributes; const guidKey: TGUID; unHigh32: UINT32; unLow32: UINT32): HRESULT; inline;
 begin
     Result := pAttributes.SetUINT64(guidKey, Pack2UINT32AsUINT64(unHigh32, unLow32));
 end;
 
-function MFGetAttributeRatio(pAttributes: IMFAttributes; const guidKey: TGUID; out punNumerator: UINT32; out punDenominator: UINT32): HRESULT; inline;
+
+
+function MFGetAttributeRatio(pAttributes: IMFAttributes; const guidKey: TGUID; out punNumerator: UINT32;
+    out punDenominator: UINT32): HRESULT; inline;
 begin
     Result := MFGetAttribute2UINT32asUINT64(pAttributes, guidKey, punNumerator, punDenominator);
 end;
+
+
 
 function MFGetAttributeSize(pAttributes: IMFAttributes; const guidKey: TGUID; out punWidth: UINT32; out punHeight: UINT32): HRESULT; inline;
 begin
     Result := MFGetAttribute2UINT32asUINT64(pAttributes, guidKey, punWidth, punHeight);
 end;
 
+
+
 function MFSetAttributeRatio(pAttributes: IMFAttributes; const guidKey: TGUID; unNumerator: UINT32; unDenominator: UINT32): HRESULT; inline;
 begin
     Result := MFSetAttribute2UINT32asUINT64(pAttributes, guidKey, unNumerator, unDenominator);
 end;
+
+
 
 function MFSetAttributeSize(pAttributes: IMFAttributes; const guidKey: TGUID; unWidth: UINT32; unHeight: UINT32): HRESULT; inline;
 begin
     Result := MFSetAttribute2UINT32asUINT64(pAttributes, guidKey, unWidth, unHeight);
 end;
 
+
+
 function MFGetAttributeString(pAttributes: IMFAttributes; const guidKey: TGUID; out ppsz: PWideChar // PWSTR
-  ): HRESULT; inline;
+    ): HRESULT; inline;
 var
     length: UINT32;
     psz: PWideChar; // PWSTR
@@ -2383,31 +3044,35 @@ var
 begin
     psz := nil;
     ppsz := nil;
-    result:=pAttributes.GetStringLength(guidKey, length);
+    Result := pAttributes.GetStringLength(guidKey, length);
     // add NULL to length
-    if (SUCCEEDED(result)) then
+    if (SUCCEEDED(Result)) then
     begin
-        inc(length); // should be save, cause we are using PASCAl and not C++
+        Inc(length); // should be save, cause we are using PASCAl and not C++
     end;
-    if (SUCCEEDED(result))  then
+    if (SUCCEEDED(Result)) then
     begin
-        cb:=length*sizeof(WCHAR);// should be save, cause we are using PASCAl and not C++
+        cb := length * sizeof(WCHAR);// should be save, cause we are using PASCAl and not C++
         // result:= SizeTMult(length,sizeof(WCHAR) , cb);
-        if( SUCCEEDED( result ) )          then
+        if (SUCCEEDED(Result)) then
         begin
-            psz := PWideChar( CoTaskMemAlloc( cb ) );
-            if( psz=nil )             then
-             begin
-                result:= E_OUTOFMEMORY;
+            psz := PWideChar(CoTaskMemAlloc(cb));
+            if (psz = nil) then
+            begin
+                Result := E_OUTOFMEMORY;
             end;
         end;
     end;
-    if (SUCCEEDED(result))  then begin
-        result:= pAttributes.GetString(guidKey, psz, length, length);
+    if (SUCCEEDED(Result)) then
+    begin
+        Result := pAttributes.GetString(guidKey, psz, length, length);
     end;
-    if (SUCCEEDED(result))  then begin
+    if (SUCCEEDED(Result)) then
+    begin
         ppsz := psz;
-    end else begin
+    end
+    else
+    begin
         CoTaskMemFree(psz);
     end;
 end;
